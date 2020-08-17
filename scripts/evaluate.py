@@ -12,6 +12,7 @@ from src.model import *
 from src.sampler import *
 from src.dataset import MidiDataset
 from src.midi_functions import rolls_to_midi
+from src.helpers import load_danceability
 
 # General settings
 parser = argparse.ArgumentParser()
@@ -43,13 +44,16 @@ def load_data(test_data, batch_size, song_paths='', instrument_path='', tempo_pa
     tempos = None
     if tempo_path != '':
         tempos = pickle.load(open(tempo_path, 'rb'))
-    
-    test_data = MidiDataset(X_test, song_paths=song_names, instruments=instruments, tempos=tempos)
+
+    danceability = pickle.load(open("/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle", 'rb'))
+
+    test_data = MidiDataset(X_test, song_paths=song_names, instruments=instruments, tempos=tempos, danceability=danceability)
     test_loader = DataLoader(test_data, batch_size=batch_size)
+
     return test_loader
 
 def load_tempo(tempo_path, song_id):
-    if temp_path is None:
+    if tempo_path is None:
         raise ValueError('Tempo file unspecified')
     else:
         tempos = pickle.load(open(tempo_path, 'rb'))
@@ -59,6 +63,7 @@ def evaluate(sampler, model, args):
     data_path = args['test_data']
     song_names = args['test_songs']
     batch_size = args['batch_size']
+    #print(f'batch_size eval.py: {batch_size}')
     data = load_data(test_data=data_path, batch_size=batch_size, instrument_path='', song_paths=song_names)
     loss_tf, loss = sampler.evaluate(model, data)
     print("Loss with teacher forcing: %.4f, loss without teacher forcing: %.4f" % (loss_tf, loss))
@@ -102,8 +107,10 @@ def reconstruct(sampler, model, evaluation_params):
     attach_method = reconstruction_params['attach_method']
     reconstruction_path = reconstruction_params['reconstruction_path']
     song = data.dataset.get_tensor_by_name(song_id)
+    print(f"Song ID: {song_id, song}")
     # Generate reconstruction from the samples
     reconstructed = sampler.reconstruct(model, song, temperature)
+
     # Reconstruct into midi form
     I, tempo = data.dataset.get_aux_by_names(song_id)
     programs = instrument_representation_to_programs(I, attach_method)
@@ -138,12 +145,14 @@ def main(args):
         data_params = config['data']     
         evaluation_params = config['evaluation']
 
+    danceability = load_danceability(data_params['danceability_paths'])
     model = load_model(args.model_type, model_params)
     sampler = Sampler(**sampler_params)
     
     model.load_state_dict(torch.load(evaluation_params['model_path'], 
                                      map_location='cpu').state_dict(), strict=False)
     print(model)
+    #print(model.max_sequence_length)
     model.eval()
             
     mode = args.mode

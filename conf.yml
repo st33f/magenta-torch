@@ -2,9 +2,9 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'pickles'
-    include_unknown: False
-    only_unknown: False
+    pickle_store_folder: 'pickle_data/colab_data'
+    include_unknown: True
+    only_unknown: True
     low_crop: 24 
     high_crop: 84
     num_notes: 128
@@ -19,22 +19,23 @@ preprocessor:
     attach_instruments: False
     input_length: &T 256 # Number of beats. We want to split songs into 16 bars of 16th notes
     output_length: *T
-    test_fraction: 0.1
+    test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.001
+    learning_rate: 0.001 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
-    batch_size: &batchsize 2
+    batch_size: &batchsize 32
     print_every: 1
-    checkpoint_every: 10000
+    checkpoint_every: 1000 #10000
     checkpoint_dir: 'checkpoint'
-    output_dir: 'outputs'
+    output_dir: 'outputs/clean_midi_2_small'
+    use_danceability: &DA False
     
 sampler:
     free_bits: 256
-    output_dir: 'outputs'
+    output_dir: 'outputs/batch_64'
     
 model:
     num_subsequences: 16
@@ -47,28 +48,30 @@ model:
     latent_dim: 512
     encoder_num_layers: 2
     decoder_num_layers: 2
+    use_danceability: *DA
 
 data: # Specify paths to data
-    train_data: 'pickles/X_train_1.pickle'
-    val_data: ''
-    train_instrument_data: ''
-    val_instrument_data: ''
-    train_tempo_data: ''
-    val_tempo_data: ''
-    train_song_paths: ''
-    val_song_paths: ''
+    train_data: 'pickles_small/X_test.pickle'
+    val_data: 'pickles_smallest/X_train.pickle'
+    train_instrument_data: 'pickles_small/I_train.pickle'
+    val_instrument_data: 'pickles_smallest/I_train.pickle'
+    train_tempo_data: 'pickles_small/T_train.pickle'
+    val_tempo_data: 'pickles_smallest/T_train.pickle'
+    train_song_paths: 'pickles_small/train_paths.pickle'
+    val_song_paths: 'pickles_smallest/train_paths.pickle'
+    danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
 
 evaluation:
-    model_path: 'outputs/checkpoints/gru_small/model.pt'
-    test_data: 'pickles/X_train_1.pickle'
-    test_instruments: 'pickles/I_train_1.pickle'
-    test_songs: 'pickles/train_paths_1.pickle'
-    test_tempos: 'pickles/T_train_1.pickle'
+    model_path: '/Users/stefanwijtsma/code/magenta-torch/outputs/checkpoints/2020_07_31_01_13_30/model.pt'
+    test_data: 'pickles/X_test.pickle'
+    test_instruments: 'pickles/I_test.pickle'
+    test_songs: 'pickles/test_paths.pickle'
+    test_tempos: 'pickles/T_test.pickle'
     batch_size: *batchsize
     temperature: 1.0
     reconstruction:
         attach_method: '1hot-category'
-        song_name: '98_Degrees_-_The_Hardest_Thing'
+        song_name: "/Users/stefanwijtsma/code/mt/data/clean_midi/Johnny Hates Jazz/I Don't Want to Be a Hero.mid"
         reconstruction_path: 'midi_reconstruction'
         
     

@@ -39,8 +39,8 @@ class BiLSTMEncoder(nn.Module):
 
     def init_hidden(self, batch_size=1):
         # Bidirectional lstm so num_layers*2
-        return (torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device),
-                torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device))
+        return torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device), \
+               torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device)
 
 
 class HierarchicalLSTMDecoder(nn.Module):
@@ -128,6 +128,8 @@ class HierarchicalLSTMDecoder(nn.Module):
             h0_dec = (torch.randn(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device),
                       torch.randn(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device))
             for note_idx in range(self.seq_length):
+                print("Prev Note = {prev_note.size()}")
+                print("Embedding = {embedding.size()}")
                 e = torch.cat((prev_note, embedding), -1)
                 prev_note, h0_dec = self.lstm(e, h0_dec)
                 prev_note = self.out(prev_note)
@@ -140,9 +142,10 @@ class HierarchicalLSTMDecoder(nn.Module):
     def init_hidden(self, batch_size=1):
         return (torch.zeros(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device),
                 torch.zeros(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device))
+        #return torch.zeros(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device)
 
 
-class BiGRUEncoder(nn.Module):
+class Danceability_BiGRUEncoder(nn.Module):
     """
     Bi-directional GRU encoder from MusicVAE
     Inputs:
@@ -156,23 +159,69 @@ class BiGRUEncoder(nn.Module):
                  hidden_size=2048,
                  latent_size=512,
                  num_layers=2):
-        super(BiGRUEncoder, self).__init__()
+        super(Danceability_BiGRUEncoder, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.latent_size = latent_size
         self.num_layers = num_layers
 
         self.bigru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, bidirectional=True)
-        self.mu = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
-        self.sigma = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
+        self.mu = nn.Linear(in_features=2 * hidden_size + 1, out_features=latent_size)
+        self.sigma = nn.Linear(in_features=2 * hidden_size +1, out_features=latent_size)
         self.softplus = nn.Softplus()
 
-    def forward(self, input, h0):
+    def forward(self, input, h0, da=None):
+        print(f"input:  {input.size()}")
+        #input = input.to(device)
+        #print(f" This is my data: {da.size()}")
+        #print(da)
+        #data, _danceability = input
+        #print(f'datashape: {data.size()}')
         batch_size = input.size(1)
+
+        #print(f"batch size layers.py: {batch_size}")
+        print(f"dance before: {da.size()}")
+        if da is not None:
+            try:
+                danceability = da.view(batch_size, 1)
+                # print(f"dance after: {danceability.size()}")
+                print(f"\n  Danceability size: {danceability.size()}")
+                print(f"  Danceability: {danceability}")
+            except:
+                danceability = torch.zeros(batch_size, 1)
+                print(f"ERROR da: {da}")
+
+
         _, h_n = self.bigru(input, h0)
+        # print(f"___ = {_.size()}")
+        # print(h_n.size())
         h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
-        mu = self.mu(h_n)
-        sigma = self.softplus(self.sigma(h_n))
+        # print(f"h_n: {h_n.size()}")
+        # print(h_n[:, -1])
+
+        # start comcatenation of danceability scores
+        if da is not None:
+            new_h_n = torch.cat((h_n, danceability), 1)
+            # print(f" New h_n size: {new_h_n.size()}")
+            # print(f" New h_n da dimension: {new_h_n[:, -1]}")
+            mu = self.mu(new_h_n)
+            sigma = self.softplus(self.sigma(new_h_n))
+            # print(f" Mu size: {mu.size()}")
+            # print(self.mu.weight.data.size())
+            # print(len(self.mu.weight.data[:,-1]))
+            print()
+            print("Mean weight for danceability:")
+            print(self.mu.weight.data[:,-1].abs().mean())
+            print("all weights to MU")
+            print(self.mu.weight.data.abs().mean(dim=0))
+            print(self.mu.weight.data.abs().mean())
+            print()
+
+            #print(sigma.size())
+        else:
+            mu = self.mu(h_n)
+            sigma = self.softplus(self.sigma(h_n))
+
         return mu, sigma
 
     def init_hidden(self, batch_size=1):
@@ -274,3 +323,42 @@ class HierarchicalGRUDecoder(nn.Module):
 
     def init_hidden(self, batch_size=1):
         return torch.zeros(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device)
+
+
+
+class BiGRUEncoder(nn.Module):
+    """
+    Bi-directional GRU encoder from MusicVAE
+    Inputs:
+    - input_size:
+    - hidden_size: hidden size of bidirectional gru
+    - num_layers: Number of layers for bidirectional gru
+    """
+
+    def __init__(self,
+                 input_size=61,
+                 hidden_size=2048,
+                 latent_size=512,
+                 num_layers=2):
+        super(BiGRUEncoder, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.latent_size = latent_size
+        self.num_layers = num_layers
+
+        self.bigru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, bidirectional=True)
+        self.mu = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
+        self.sigma = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
+        self.softplus = nn.Softplus()
+
+    def forward(self, input, h0):
+        batch_size = input.size(1)
+        _, h_n = self.bigru(input, h0)
+        h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
+        mu = self.mu(h_n)
+        sigma = self.softplus(self.sigma(h_n))
+        return mu, sigma
+
+    def init_hidden(self, batch_size=1):
+        # Bidirectional gru so num_layers*2
+        return torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device)

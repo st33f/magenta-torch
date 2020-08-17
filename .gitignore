@@ -391,3 +391,10 @@ dmypy.json
 .DS_Store
 outputs
 
+/midi_reconstruction/
+/preprocess_midi_data/
+/wandb/
+/pickle_data/
+/pickles_small/
+/pickles_smallest/
+/pickles_small.zip

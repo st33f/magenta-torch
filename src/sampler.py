@@ -25,34 +25,40 @@ class Sampler:
         self.free_bits = free_bits
         self.output_dir = output_dir
         
-    def reconstruction_loss(self, model, batch):
+    def reconstruction_loss(self, model, batch, da=None):
         """
         Return reconstruction loss with and witout teacher forcing
         """
-        pred_tf, _, _, _ = model(batch, True)
-        pred, _, _, _ = model(batch, False)
+        pred_tf, _, _, _ = model(batch, True, da=da)
+        pred, _, _, _ = model(batch, False, da=da)
         loss_tf = torch.nn.functional.binary_cross_entropy_with_logits(pred_tf, batch, reduction='mean')
         loss = torch.nn.functional.binary_cross_entropy_with_logits(pred, batch, reduction='mean')
         return loss_tf, loss
     
-    def evaluate(self, model, data):
+    def evaluate(self, model, input_data):
         """
         Evaluate test test data directly using logits
         """
         model.eval()
         loss_acc_tf = 0
         loss_acc = 0
+        print(f"input_data: {input_data}")
         with torch.no_grad():
-            for idx, batch in enumerate(data):
-                batch = batch.transpose(0, 1)
-                batch_size = batch.size(1)
-                batch = batch.view(model.max_sequence_length, batch_size, model.decoder.input_size)
-                batch.to(device)
-                batch_loss_tf, batch_loss = self.reconstruction_loss(model, batch)
+            for idx, batch in enumerate(input_data):
+                print(f"batch: {batch[0].size()}")
+                data, da = batch
+                print(data.size())
+                #print(da)
+                da.to(device)
+                data = data.transpose(0, 1)
+                batch_size = data.size(1)
+                data = data.view(model.max_sequence_length, batch_size, model.decoder.input_size)
+                data.to(device)
+                batch_loss_tf, batch_loss = self.reconstruction_loss(model, data, da)
                 loss_acc_tf += batch_loss_tf
                 loss_acc += batch_loss
                 print('idx: %d, loss_tf: %.4f, loss: %.4f' % (idx, batch_loss_tf, batch_loss))
-        return loss_acc_tf / len(data), loss_acc / len(data)   
+        return loss_acc_tf / len(input_data), loss_acc / len(input_data)
     
     def reconstruct(self, model, song, temperature):
         """
@@ -60,6 +66,7 @@ class Sampler:
         """
         model.eval()
         with torch.no_grad():
+            print(song)
             song = song.transpose(0, 1)
             batch_size = song.size(1)
             song.view(model.max_sequence_length, batch_size, model.decoder.input_size)

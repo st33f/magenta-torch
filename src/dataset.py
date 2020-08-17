@@ -17,16 +17,19 @@ class MidiDataset(Dataset):
     - song_name_to_idx: Dictionary mapping song name to idx in song_names and midi paths
     - index_mapper: List of tuple (song_idx, bar_idx) for each song
     """
-    def __init__(self, input_tensor, song_paths=None, instruments=None, tempos=None):
+    def __init__(self, input_tensor, song_paths=None, instruments=None, tempos=None, danceability=None):
         self.song_tensor = [x.astype(float) for x in input_tensor]
         self.midi_paths = song_paths
         self.song_names = None
+        self.danceabilities = danceability
+
         if song_paths is not None:
             self.song_names = [os.path.basename(x).split('.')[0] for x in song_paths]
         self.index_mapper, self.song_to_bar_idx = self._initialize()
         if self.song_names is not None:
-            self.song_to_idx = {v:k for (k,v) in enumerate(self.song_names)}
-        self.instruments=instruments
+            #self.song_to_idx = {v:k for (k,v) in enumerate(self.song_names)}
+            self.song_to_idx = {v: k for (k, v) in enumerate(self.midi_paths)}
+        self.instruments = instruments
         self.tempos = tempos
     
     def _initialize(self):
@@ -51,19 +54,31 @@ class MidiDataset(Dataset):
     def __getitem__(self, idx):
         """
         A sample is B consecutive bars. In MusicVAE this would be 16 consecutive
-        bars. For MidiVAE a sample consists of a single bar. 
+        bars. For MidiVAE a sample consists of a single bar.
         """
         song_idx, section_idx = self.index_mapper[idx]
-        
+        print(f"IDX: {idx}")
+        print(f"song_idx: {song_idx}")
         sample = self.song_tensor[song_idx]
-        sample = sample[section_idx,:,:] 
-        x = torch.tensor(sample, dtype=torch.float)
-        return x.to(device) 
+        print(f"song name: {self.song_names[song_idx]}")
+
+        # make danceability tensor
+        # danceability = torch.tensor(self.danceabilities[idx], dtype=torch.float32)
+        danceability = torch.tensor(self.danceabilities[song_idx], dtype=torch.float32)
+
+        sample = sample[section_idx,:,:]
+        x = torch.tensor(sample, dtype=torch.float32)
+
+        # return both x and DA as tuple
+        result = (x, danceability)
+        # return x.to(device)
+        return result
     
     def get_tensor_by_name(self, song_name):
         """
         Return tensor for specified song partitioned by bars
         """
+        #print(self.midi_paths)
         song_idx = self.song_to_idx[song_name]
 #         song_idx, bar_idx = self.song_to_bar_idx[song_name]
 #         print(bar_idx)

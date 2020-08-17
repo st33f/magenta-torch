@@ -72,7 +72,7 @@ def rolls_to_midi(pianoroll,
 
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
-    midi = pm.PrettyMIDI(initial_tempo=bpm, resolution=1000)    
+    midi = pm.PrettyMIDI(initial_tempo=bpm, resolution=1000)    # TODO change resolution to sensible PPC: between 24 and 960
     midi.time_signature_changes.append(pm.TimeSignature(4, 4, 0))
 
     for voice, program in enumerate(programs):
