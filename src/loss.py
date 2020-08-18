@@ -36,6 +36,7 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     Attempting to fix this loss function
     """
     device = pred.device
+    print(f"loss dev: {device}")
     r_loss = binary_cross_entropy_with_logits(pred, target, reduction='sum')
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
@@ -45,4 +46,4 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     kl_div = kl_divergence(q, p)
 
     kl_cost = torch.max(torch.mean(kl_div) - free_bits, torch.tensor([0], dtype=torch.float, device=device))
-    return r_loss, kl_cost, kl_div
+    return r_loss.to(device), kl_cost.to(device), kl_div.to(device)

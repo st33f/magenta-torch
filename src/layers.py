@@ -172,7 +172,7 @@ class Danceability_BiGRUEncoder(nn.Module):
 
     def forward(self, input, h0, da=None):
         print(f"input:  {input.size()}")
-        #input = input.to(device)
+        input = input.to(device)
         #print(f" This is my data: {da.size()}")
         #print(da)
         #data, _danceability = input
@@ -201,6 +201,7 @@ class Danceability_BiGRUEncoder(nn.Module):
 
         # start comcatenation of danceability scores
         if da is not None:
+            danceability = danceability.to(device)
             new_h_n = torch.cat((h_n, danceability), 1)
             # print(f" New h_n size: {new_h_n.size()}")
             # print(f" New h_n da dimension: {new_h_n[:, -1]}")
@@ -264,7 +265,8 @@ class HierarchicalGRUDecoder(nn.Module):
 
     def forward(self, target, latent, h0, use_teacher_forcing=True, temperature=1.0):
         batch_size = target.size(1)
-
+        target = target.to(device)
+       
         out = torch.zeros(self.max_seq_length, batch_size, self.input_size, dtype=torch.float, device=device)
         # Initialie start note
         prev_note = torch.zeros(1, batch_size, self.input_size, dtype=torch.float, device=device)
@@ -352,6 +354,7 @@ class BiGRUEncoder(nn.Module):
         self.softplus = nn.Softplus()
 
     def forward(self, input, h0):
+        input = input.to(device)
         batch_size = input.size(1)
         _, h_n = self.bigru(input, h0)
         h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)

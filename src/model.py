@@ -69,6 +69,7 @@ class MusicLSTMVAE(nn.Module):
         Input
         - x: input sequence x = x_1, ... ,x_T
         """
+        x = x.to(device)
         batch_size = x.size(1)
         h_enc, c_enc = self.encoder.init_hidden(batch_size)
         mu, sigma = self.encoder(x, h_enc, c_enc)

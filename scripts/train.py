@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import pickle
@@ -109,7 +110,7 @@ def main(args):
     #filepaths, danceability = load_extra_features(args.extra_features)
     #filepaths = load_filepaths()
     #print(danceability)
-    filepaths = load_filepaths()
+    filepaths = load_filepaths(data_params['filepaths'])
     danceability = load_danceability(data_params['danceability_paths'])
 
     train_data, val_data = load_data(data_params['train_data'], 
@@ -121,6 +122,7 @@ def main(args):
     # print(f"len Val data: {len(val_data)}")
     # print(f"len filepaths: {len(filepaths)}")
     model = load_model(args.model_type, model_params)
+    
 
     # Watch the model with weights and biases
     wandb.watch(model)
