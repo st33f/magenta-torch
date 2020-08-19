@@ -33,7 +33,8 @@ class Trainer:
                  checkpoint_every=10000,
                  checkpoint_dir='checkpoint',
                  output_dir='outputs',
-                 use_danceability=True):
+                 use_danceability=True,
+                 use_fake_data=False):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
         self.free_bits = free_bits
@@ -45,6 +46,7 @@ class Trainer:
         self.checkpoint_every = checkpoint_every
         self.output_dir = output_dir
         self.use_danceability = use_danceability
+        self.use_fake_data = use_fake_data
         
     def inverse_sigmoid(self,step):
         """
