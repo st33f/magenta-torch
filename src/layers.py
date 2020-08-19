@@ -264,6 +264,7 @@ class HierarchicalGRUDecoder(nn.Module):
 
     def forward(self, target, latent, h0, use_teacher_forcing=True, temperature=1.0):
         batch_size = target.size(1)
+        target = target.to(device)
 
         out = torch.zeros(self.max_seq_length, batch_size, self.input_size, dtype=torch.float, device=device)
         # Initialie start note

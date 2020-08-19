@@ -15,6 +15,9 @@ import os
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+def decay_old(x):
+    return 0.01 + (0.99)*(0.9999)**x
+
 def decay(x):
     return 0.01 + (0.99)*(0.9999)**x
 
@@ -107,13 +110,12 @@ class Trainer:
                     # first, get data AND danceability from the dataset
                     data, da = batch
                     data = data.transpose(0, 1).squeeze()
+                    data = data.to(device)
                     if use_da:
-                        da.to(device)
-                        data.to(device)
+                        da = da.to(device)
                         # pass it both to the trainer
                         elbo, kl = self.train_batch(iter, model, data, da)
                     else:
-                        data.to(device)
                         elbo, kl = self.train_batch(iter, model, data, da=None)
                     #print(f"trainer elbo: {elbo}")
                     #print(f"batch_loss: {batch_loss}")

@@ -45,4 +45,4 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     kl_div = kl_divergence(q, p)
 
     kl_cost = torch.max(torch.mean(kl_div) - free_bits, torch.tensor([0], dtype=torch.float, device=device))
-    return r_loss, kl_cost, kl_div
+    return r_loss.to(device), kl_cost.to(device), kl_div.to(device)
