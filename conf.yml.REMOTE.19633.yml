@@ -22,16 +22,17 @@ preprocessor:
     test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.0001 #0.001
+    learning_rate: 0.0005 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
-    batch_size: &batchsize 64
+    batch_size: &batchsize 2
     print_every: 1
     checkpoint_every: 10000
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/clean_midi_1'
-    use_danceability: &DA True
+    output_dir: 'outputs/initial_colab_data'
+    use_danceability: &DA False
+    use_fake_data: True
     
 sampler:
     free_bits: 256
@@ -51,14 +52,14 @@ model:
     use_danceability: *DA
 
 data: # Specify paths to data
-    train_data: '/var/scratch/swa420/data/clean_midi_1/X_train.pickle'
-    val_data: '/var/scratch/swa420/data/clean_midi_1/X_test.pickle'
-    train_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_train.pickle'
-    val_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_test.pickle'
-    train_tempo_data: '/var/scratch/swa420/data/clean_midi_1/T_train.pickle'
-    val_tempo_data: '/var/scratch/swa420/data/clean_midi_1/T_test.pickle'
-    train_song_paths: '/var/scratch/swa420/data/clean_midi_1/train_paths.pickle'
-    val_song_paths: '/var/scratch/swa420/data/clean_midi_1/test_paths.pickle'
+    train_data: '/var/scratch/swa420/data/colab_data/X_train.pickle'
+    val_data: '/var/scratch/swa420/data/colab_data/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data/colab_data/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data/colab_data/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data/colab_data/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data/colab_data/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data/colab_data/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data/colab_data/test_paths.pickle'
     danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
     filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle' 
 

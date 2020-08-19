@@ -216,7 +216,7 @@ class MidiPreprocessor:
         #program numbers are between 0 and 127 and have a 1:1 mapping to the instruments described in settings file
         programs = [i.program for i in mid.instruments]
 
-        #we may want to override the maximal_number_of_voices_per_track 
+        # we may want to override the maximal_number_of_voices_per_track
         # if the following tracks are all silent it makes no sense to exclude 
         # voices from the first instrument and then just have a song with 1 voice
         override_max_notes_per_track_list = [self.max_voices_per_track 

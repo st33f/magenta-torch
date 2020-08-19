@@ -16,6 +16,9 @@ import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"device: {device}")
 
+def decay_old(x):
+    return 0.01 + (0.99)*(0.9999)**x
+
 def decay(x):
     return 0.01 + (0.99)*(0.9999)**x
 
