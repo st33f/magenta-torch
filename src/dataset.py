@@ -57,10 +57,10 @@ class MidiDataset(Dataset):
         bars. For MidiVAE a sample consists of a single bar.
         """
         song_idx, section_idx = self.index_mapper[idx]
-        print(f"IDX: {idx}")
-        print(f"song_idx: {song_idx}")
+        #print(f"IDX: {idx}")
+        #print(f"song_idx: {song_idx}")
         sample = self.song_tensor[song_idx]
-        print(f"song name: {self.song_names[song_idx]}")
+        #print(f"song name: {self.song_names[song_idx]}")
 
         # make danceability tensor
         # danceability = torch.tensor(self.danceabilities[idx], dtype=torch.float32)

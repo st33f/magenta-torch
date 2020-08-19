@@ -22,20 +22,20 @@ preprocessor:
     test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.001 #0.001
+    learning_rate: 0.0001 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
     batch_size: &batchsize 32
     print_every: 1
-    checkpoint_every: 1000 #10000
+    checkpoint_every: 10000
     checkpoint_dir: 'checkpoint'
-    output_dir: 'outputs/clean_midi_2_small'
+    output_dir: 'outputs/initial_colab_data'
     use_danceability: &DA False
     
 sampler:
     free_bits: 256
-    output_dir: 'outputs/batch_64'
+    output_dir: 'outputs'
     
 model:
     num_subsequences: 16
@@ -51,15 +51,16 @@ model:
     use_danceability: *DA
 
 data: # Specify paths to data
-    train_data: 'pickles_small/X_test.pickle'
-    val_data: 'pickles_smallest/X_train.pickle'
-    train_instrument_data: 'pickles_small/I_train.pickle'
-    val_instrument_data: 'pickles_smallest/I_train.pickle'
-    train_tempo_data: 'pickles_small/T_train.pickle'
-    val_tempo_data: 'pickles_smallest/T_train.pickle'
-    train_song_paths: 'pickles_small/train_paths.pickle'
-    val_song_paths: 'pickles_smallest/train_paths.pickle'
-    danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
+    train_data: '/var/scratch/swa420/data/colab_data/X_train.pickle'
+    val_data: '/var/scratch/swa420/data/colab_data/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data/colab_data/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data/colab_data/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data/colab_data/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data/colab_data/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data/colab_data/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data/colab_data/test_paths.pickle'
+    danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
+    filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle' 
 
 evaluation:
     model_path: '/Users/stefanwijtsma/code/magenta-torch/outputs/checkpoints/2020_07_31_01_13_30/model.pt'

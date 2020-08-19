@@ -14,6 +14,7 @@ import os
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"device: {device}")
 
 def decay_old(x):
     return 0.01 + (0.99)*(0.9999)**x
@@ -68,9 +69,9 @@ class Trainer:
         elbo = r_loss + kl_weight*kl_cost
         wandb.log({"KL Weight": kl_weight, "R_loss": r_loss})
         # print()
-        # print(f"R_loss: {r_loss}")
-        # print(f"Elbo: {elbo}")
-        # print(f"KL weight: {kl_weight}")
+        print(f"R_loss: {r_loss}")
+        print(f"Elbo: {elbo}")
+        print(f"KL weight: {kl_weight}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
         # print()
         #return kl_weight*elbo, kl
@@ -124,7 +125,7 @@ class Trainer:
                     iter += 1
 
                     # send batch loss data to wandb
-                    wandb.log({"Batch ELBO": elbo, "Batch KL Div": kl})
+                    wandb.log({"Batch ELBO": elbo, "Batch KL Div": kl, "Epoch": epoch})
 
                     if iter%self.print_every == 0:
                         loss_avg = torch.mean(torch.tensor(batch_loss))
@@ -153,10 +154,10 @@ class Trainer:
                     with tqdm(total=len(val_data)) as t:
                         for idx, batch in enumerate(val_data):
                             data, da = batch
-                            data.to(device)
+                            data = data.to(device)
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
-                                da.to(device)
+                                da = da.to(device)
                                 elbo, kl = self.compute_loss(iter, model, data, False, da)
                             else:
                                 elbo, kl = self.compute_loss(iter, model, data, False, da=None)
@@ -172,7 +173,7 @@ class Trainer:
                     print('----------Validation')
                     print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, loss_avg, div))
                     # send batch loss data to wandb
-                    wandb.log({"iteration": iter, "Validation ELBO": val_loss_avg, "Validation KL Div": div})
+                    wandb.log({"Epoch": epoch, "Validation ELBO": val_loss_avg, "Validation KL Div": div})
 
         print("Final results:")
         print(train_loss)
