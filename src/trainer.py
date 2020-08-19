@@ -122,7 +122,7 @@ class Trainer:
                     iter += 1
 
                     # send batch loss data to wandb
-                    wandb.log({"Batch ELBO": elbo, "Batch KL Div": kl, "Epoch": epoch})
+                    wandb.log({"train ELBO": elbo, "train KL Div": kl, "Epoch": epoch})
 
                     if iter%self.print_every == 0:
                         loss_avg = torch.mean(torch.tensor(batch_loss))
@@ -180,17 +180,17 @@ class Trainer:
         print(val_kl)
 
         # send batch loss data to wandb
-        #wandb.log({"Final training ELBO": elbo, "Batch KL Div": kl})
+        wandb.log({"Final training ELBOs": train_loss, "final train KL": train_kl, "Final val ELBOs": val_loss, "Final val KL": val_kl})
 
         # torch.save(open('outputs/train_loss_musicvae_batch', 'wb'), torch.tensor(train_loss))
         # torch.save(open('outputs/val_loss_musicvae_batch', 'wb'), torch.tensor(val_loss))
         # torch.save(open('outputs/train_kl_musicvae_batch', 'wb'), torch.tensor(train_kl))
         # torch.save(open('outputs/val_kl_musicvae_batch', 'wb'), torch.tensor(val_kl))
 
-        torch.save(torch.tensor(train_loss), open('outputs/train_loss_musicvae_batch', 'wb'))
-        torch.save(torch.tensor(val_loss), open('outputs/val_loss_musicvae_batch', 'wb'))
-        torch.save(torch.tensor(train_kl), open('outputs/train_kl_musicvae_batch', 'wb'))
-        torch.save(torch.tensor(val_kl), open('outputs/val_kl_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(train_loss), open('scratch/outputs/train_loss_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(val_loss), open('scratch/outputs/val_loss_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(train_kl), open('scratch/outputs/train_kl_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(val_kl), open('scratch/outputs/val_kl_musicvae_batch', 'wb'))
         
     def save_checkpoint(self, model, epoch, iter):
         print('Saving checkpoint')

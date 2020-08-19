@@ -103,7 +103,7 @@ def main(args):
         data_params = config['data']
 
     # init weights and biases
-    wandb.init(project="master-thesis", config=config)
+    wandb.init(project="master-thesis", config=config, dir="scratch/")
     wandb.config.update({"epochs": args.epochs, "batch_size": trainer_params['batch_size']})
 
 
