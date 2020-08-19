@@ -64,7 +64,11 @@ class MidiDataset(Dataset):
 
         # make danceability tensor
         # danceability = torch.tensor(self.danceabilities[idx], dtype=torch.float32)
-        danceability = torch.tensor(self.danceabilities[song_idx], dtype=torch.float32)
+        if self.danceabilities is not None:
+            danceability = torch.tensor(self.danceabilities[song_idx], dtype=torch.float32)
+        else:
+            danceability = []
+
 
         sample = sample[section_idx,:,:]
         x = torch.tensor(sample, dtype=torch.float32)
