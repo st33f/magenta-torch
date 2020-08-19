@@ -14,6 +14,8 @@ from src.trainer import *
 from src.dataset import MidiDataset
 from src.helpers import load_danceability, load_filepaths
 
+from helpers.fake_dataset import generate_fake_songs
+
 import wandb
 
 
@@ -51,9 +53,22 @@ def load_model(model_type, params):
     return model
 
 
-def load_data(train_data, val_data, batch_size, validation_split=0.2, random_seed=874, song_paths=None, danceability=None):
+def load_data(train_data, val_data, batch_size, validation_split=0.2, random_seed=874, song_paths=None, danceability=None, use_fake_data=False):
     train_loader = None
     val_loader = None
+
+    # for testing purposes
+    if use_fake_data:
+        X_train = generate_fake_songs(2, 10)
+        train_data = MidiDataset(X_train, song_paths=song_paths)
+        train_loader = DataLoader(train_data, batch_size=batch_size)
+
+        X_val = generate_fake_songs(2, 4)
+        val_data = MidiDataset(X_val, song_paths=song_paths)
+        val_loader = DataLoader(val_data, batch_size=batch_size)
+        return train_loader, val_loader
+
+    # the real loader
     if train_data != '':
         X_train = pickle.load(open(train_data, 'rb'))
         train_data = MidiDataset(X_train, song_paths=song_paths, danceability=danceability)
@@ -117,7 +132,8 @@ def main(args):
                                      data_params['val_data'], 
                                      trainer_params['batch_size'],
                                      song_paths=filepaths,
-                                     danceability=danceability)
+                                     danceability=danceability,
+                                     use_fake_data=trainer_params['use_fake_data'])
     # print(f"len train data: {len(train_data)}")
     # print(f"len Val data: {len(val_data)}")
     # print(f"len filepaths: {len(filepaths)}")

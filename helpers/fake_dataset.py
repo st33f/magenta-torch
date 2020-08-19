@@ -2,7 +2,7 @@ import numpy
 import pickle
 import torch
 import numpy as np
-
+'''
 train_data = "/Users/stefanwijtsma/code/magenta-torch/pickle_data/clean_midi_2_small/X_train.pickle"
 X_train = pickle.load(open(train_data, 'rb'))
 
@@ -16,7 +16,7 @@ for i, values in enumerate(X_train):
     if i < 1:
         print(len(values))
         print(len(values[0]))
-
+'''
 
 timestep = [0.] * 61
 
@@ -24,9 +24,10 @@ class_count = 61
 
 
 
-def generate_fake_songs(class_count, num_batches, num_songs):
+def generate_fake_songs(num_batches, num_songs):
 
     song = []
+    class_count = 61
 
     for number in range(num_batches):
         note_count = 0
@@ -47,13 +48,13 @@ def generate_fake_songs(class_count, num_batches, num_songs):
 
     return [np.array(song)] * num_songs
 
-song = generate_fake_songs(class_count, 38, 172)
-
-#print(song)
-print()
-
-print(len(song))
-for i, values in enumerate(song):
-    if i < 1:
-        print(len(values))
-        print(len(values[0]))
+# song = generate_fake_songs(38, 172)
+#
+# #print(song)
+# print()
+#
+# print(len(song))
+# for i, values in enumerate(song):
+#     if i < 1:
+#         print(len(values))
+#         print(len(values[0]))
