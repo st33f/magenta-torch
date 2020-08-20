@@ -144,7 +144,7 @@ class Trainer:
             train_loss.append(torch.mean(torch.tensor(batch_loss)))
             train_kl.append(torch.mean(torch.tensor(batch_kl)))
             
-            self.save_checkpoint(model, epoch, iter)
+            #self.save_checkpoint(model, epoch, iter)
 
 
             print("\n\n\n ---- Validation starting...")
