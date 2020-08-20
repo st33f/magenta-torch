@@ -19,8 +19,14 @@ print(f"device: {device}")
 def decay_old(x):
     return 0.01 + (0.99)*(0.9999)**x
 
-def decay(x):
-    return 0.01 + (0.99)*(0.9999)**x
+def lr_decay(global_step,
+    init_learning_rate = 1e-3,
+    min_learning_rate = 1e-5,
+    decay_rate = 0.9999):
+    lr = ((init_learning_rate - min_learning_rate) *
+          pow(decay_rate, global_step) +
+          min_learning_rate)
+    return lr
 
 class Trainer:
     def __init__(self, 
@@ -126,13 +132,13 @@ class Trainer:
                     batch_kl.append(kl)
                     iter += 1
 
-                    # send batch loss data to wandb
-                    wandb.log({"train ELBO": elbo, "train KL Div": kl, "Epoch": epoch})
 
                     if iter%self.print_every == 0:
                         loss_avg = torch.mean(torch.tensor(batch_loss))
                         div = torch.mean(torch.tensor(batch_kl))
                         print('\n\n\n\nEpoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, loss_avg, div))
+                        # send batch loss data to wandb
+                        wandb.log({"train ELBO (batch avg)": loss_avg, "train KL Div": div, "Epoch": epoch, "Iteration": iter, "LR": self.scheduler.get_lr()[0]})
 
                     if iter%self.checkpoint_every == 0:
                         self.save_checkpoint(model, epoch, iter)
@@ -185,7 +191,7 @@ class Trainer:
         print(val_kl)
 
         # send batch loss data to wandb
-        wandb.log({"Final training ELBOs": train_loss, "final train KL": train_kl, "Final val ELBOs": val_loss, "Final val KL": val_kl})
+        #wandb.log({"Final training ELBOs": train_loss, "final train KL": train_kl, "Final val ELBOs": val_loss, "Final val KL": val_kl})
 
         # torch.save(open('outputs/train_loss_musicvae_batch', 'wb'), torch.tensor(train_loss))
         # torch.save(open('outputs/val_loss_musicvae_batch', 'wb'), torch.tensor(val_loss))
@@ -228,7 +234,7 @@ class Trainer:
         else:
             if optimizer is None:
                 self.optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
-                self.scheduler = LambdaLR(self.optimizer, decay)
+                self.scheduler = LambdaLR(self.optimizer, lr_decay)
                 
             epoch = 1
             iter = 0

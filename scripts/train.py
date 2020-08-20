@@ -61,11 +61,11 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
     if use_fake_data:
         X_train = generate_fake_songs(2, 10)
         train_data = MidiDataset(X_train, song_paths=song_paths)
-        train_loader = DataLoader(train_data, batch_size=batch_size)
+        train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
         X_val = generate_fake_songs(2, 4)
         val_data = MidiDataset(X_val, song_paths=song_paths)
-        val_loader = DataLoader(val_data, batch_size=batch_size)
+        val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader
 
     # the real loader
@@ -81,7 +81,7 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
         print(f"last_song_id: {last_song_id}")
 
         # print(train_data.song_to_idx)
-        train_loader = DataLoader(train_data, batch_size=batch_size)
+        train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
         print(f'len train loader: {len(train_loader)}')
         print(f"da slice training: {len(train_data.danceabilities[:last_song_id])}")
         print(f"da slice val: {len(train_data.danceabilities[last_song_id:])}")
@@ -91,7 +91,7 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
     if val_data != '':
         X_val = pickle.load(open(val_data, 'rb'))
         val_data = MidiDataset(X_val, song_paths=song_paths, danceability=danceability)
-        val_loader = DataLoader(val_data, batch_size=batch_size)
+        val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         print(' --- val data summary --- ')
         print(len(val_data.danceabilities))
         print(len(song_paths))
