@@ -23,9 +23,10 @@ def lr_decay(global_step,
     init_learning_rate = 1e-3,
     min_learning_rate = 1e-5,
     decay_rate = 0.9999):
-    lr = ((init_learning_rate - min_learning_rate) *
-          pow(decay_rate, global_step) +
-          min_learning_rate)
+    # lr = ((init_learning_rate - min_learning_rate) *
+    #       pow(decay_rate, global_step) +
+    #       min_learning_rate)
+    lr = init_learning_rate * pow(-0.9999, global_step)
     return lr
 
 class Trainer:
@@ -198,10 +199,10 @@ class Trainer:
         # torch.save(open('outputs/train_kl_musicvae_batch', 'wb'), torch.tensor(train_kl))
         # torch.save(open('outputs/val_kl_musicvae_batch', 'wb'), torch.tensor(val_kl))
 
-        #torch.save(torch.tensor(train_loss), open('scratch/outputs/train_loss_musicvae_batch', 'wb'))
-        #torch.save(torch.tensor(val_loss), open('scratch/outputs/val_loss_musicvae_batch', 'wb'))
-        #torch.save(torch.tensor(train_kl), open('scratch/outputs/train_kl_musicvae_batch', 'wb'))
-        #torch.save(torch.tensor(val_kl), open('scratch/outputs/val_kl_musicvae_batch', 'wb'))
+        torch.save(torch.tensor(train_loss), open('scratch/outputs/train_loss_musicvae_batch', 'wb'))
+        torch.save(torch.tensor(val_loss), open('scratch/outputs/val_loss_musicvae_batch', 'wb'))
+        torch.save(torch.tensor(train_kl), open('scratch/outputs/train_kl_musicvae_batch', 'wb'))
+        torch.save(torch.tensor(val_kl), open('scratch/outputs/val_kl_musicvae_batch', 'wb'))
         
     def save_checkpoint(self, model, epoch, iter):
         print('Saving checkpoint')
