@@ -76,11 +76,8 @@ class Trainer:
         r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight*kl_cost
-        wandb.log({"KL Weight": kl_weight, "R_loss": r_loss, "Accuracy": acc})
-
-
         pred_viz = pred.cpu()
-        wandb.log({"Pred": wandb.Histogram(pred_viz.detach().numpy())})
+        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred_viz.detach().numpy())})
         # print()
         print(f"R_loss: {r_loss}")
         print(f"Elbo: {elbo}")
@@ -89,22 +86,30 @@ class Trainer:
         # print(f"Batch mean KL Div: {kl_div.mean()}")
         # print()
         #return kl_weight*elbo, kl
-        return elbo, kl_div.mean()
+        return elbo, kl_div.mean(), r_loss, acc, ham_dist
         
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
-        elbo, kl = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
         self.scheduler.step()
         #print(f"elbo train batch: {elbo}")
+
+        # send batch loss data to wandb
+        wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo, "train KL Div": kl,
+                   "LR": self.scheduler.get_last_lr(), "Hamming Dist": ham_dist})
+
+        # log additional metrics
+        wandb.log({ "training R_loss": r_loss, "Training Accuracy": acc})
+
         return elbo.item(), kl.item()
         
     def train_epochs(self, model, start_epoch, iter, end_epoch, train_data, val_data=None):
-        train_loss, val_loss = [], []
-        train_kl,  val_kl = [], []
+        train_loss, train_kl = [], []
+        val_elbo,  val_kl, val_r_loss, val_acc, val_ham_dist = [], [], [], [], []
         use_da = self.use_danceability
         print("\n   ---   Starting training   ---")
         if use_da:
@@ -143,8 +148,7 @@ class Trainer:
                         loss_avg = torch.mean(torch.tensor(batch_loss))
                         div = torch.mean(torch.tensor(batch_kl))
                         print('\n\n\n\nEpoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, loss_avg, div))
-                        # send batch loss data to wandb
-                        wandb.log({"train ELBO (batch avg)": loss_avg, "train KL Div": div, "Epoch": epoch, "Iteration": iter, "LR": self.scheduler.get_last_lr()})
+
 
                     if iter%self.checkpoint_every == 0:
                         self.save_checkpoint(model, epoch, iter)
@@ -162,7 +166,7 @@ class Trainer:
             print("\n\n\n ---- Validation starting...")
 
             if val_data is not None:
-                batch_loss, batch_kl = [], []
+                batch_elbo, batch_kl, batch_r_loss, batch_acc, batch_ham_dist = [], [], [], [], []
                 with torch.no_grad():
                     model.eval()
                     with tqdm(total=len(val_data)) as t:
@@ -172,28 +176,43 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl = self.compute_loss(iter, model, data, False, da)
+                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)
                             else:
-                                elbo, kl = self.compute_loss(iter, model, data, False, da=None)
-                            batch_loss.append(elbo)
+                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da=None)
+                            batch_elbo.append(elbo)
                             batch_kl.append(kl)
+                            batch_r_loss.append(r_loss)
+                            batch_acc.append(acc)
+                            batch_ham_dist.append(ham_dist)
                             # tqdm
                             #t.set_postfix(loss=f"Elbo: {elbo}")
                             t.update()
-                        val_loss.append(torch.mean(torch.tensor(batch_loss)))
+                        # get avg values for validation dataset
+                        val_elbo.append(torch.mean(torch.tensor(batch_loss)))
                         val_kl.append(torch.mean(torch.tensor(batch_kl)))
-                    val_loss_avg = torch.mean(torch.tensor(val_loss))
+                        val_r_loss.append(torch.mean(torch.tensor(batch_r_loss)))
+                        val_acc.append(torch.mean(torch.tensor(batch_acc)))
+                        val_ham_dist.append(torch.mean(torch.tensor(batch_ham_dist)))
+
+
+                    val_elbo_avg = torch.mean(torch.tensor(val_elbo))
                     div = torch.mean(torch.tensor(val_kl))
+                    eval_r_loss = torch.mean(torch.tensor(val_r_loss))
+                    eval_acc = torch.mean(torch.tensor(val_acc))
+                    eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
                     print('----------Validation')
-                    print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, loss_avg, div))
+                    print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
                     # send batch loss data to wandb
-                    wandb.log({"Epoch": epoch, "Validation ELBO": val_loss_avg, "Validation KL Div": div})
+                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
+                    wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
+
+
 
         print("Final results:")
         print(train_loss)
         print(train_kl)
         print()
-        print(val_loss)
+        print(val_elbo)
         print(val_kl)
 
         # send batch loss data to wandb

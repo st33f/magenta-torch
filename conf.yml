@@ -32,7 +32,7 @@ trainer:
     checkpoint_dir: 'checkpoint'
     output_dir: 'outputs/initial_colab_data'
     use_danceability: &DA False
-    use_fake_data: False
+    use_fake_data: True
     
 sampler:
     free_bits: 256
@@ -62,6 +62,20 @@ data: # Specify paths to data
     val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/test_paths.pickle'
     danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
     filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
+
+das-data:
+    train_data: '/var/scratch/swa420/data/clean_midi_1/X_train.pickle'
+    val_data: '/var/scratch/swa420/data/clean_midi_1/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data/clean_midi_1/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data/clean_midi_1/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data/clean_midi_1/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data/clean_midi_1/test_paths.pickle'
+    danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
+    filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle'
+
+
 
 evaluation:
     model_path: '/Users/stefanwijtsma/code/magenta-torch/outputs/checkpoints/2020_07_31_01_13_30/model.pt'
