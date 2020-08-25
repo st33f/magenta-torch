@@ -30,7 +30,7 @@ trainer:
     print_every: 1
     checkpoint_every: 10000
     checkpoint_dir: 'checkpoint'
-    output_dir: '/var/scratch/swa420/outputs/c_m_1_batch64'
+    output_dir: '/var/scratch/swa420/outputs/accuracy_batch64'
     use_danceability: &DA True
     use_fake_data: False
     
