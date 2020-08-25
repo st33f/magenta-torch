@@ -24,8 +24,8 @@ def lr_decay(global_step,
     min_learning_rate = 1e-5,
     decay_rate = 0.9999):
     # lr = ((init_learning_rate - min_learning_rate) *
-    #       pow(decay_rate, global_step) +
-    #       min_learning_rate)
+    #      pow(decay_rate, global_step) +
+    #      min_learning_rate)
     lr = init_learning_rate * pow(-0.9999, global_step)
     return lr
 
@@ -73,17 +73,19 @@ class Trainer:
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
         #elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
-        r_loss, kl_cost, kl_div, hamming_distance, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
+        r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight*kl_cost
+        wandb.log({"KL Weight": kl_weight, "R_loss": r_loss, "Accuracy": acc})
 
-        wandb.log({"KL Weight": kl_weight, "R_loss": r_loss, "Hamming Distance": hamming_distance, "Accuracy": acc})
-        wandb.log({"Pred": wandb.Histogram(pred.detach().numpy())})
+
+        pred_viz = pred.cpu()
+        wandb.log({"Pred": wandb.Histogram(pred_viz.detach().numpy())})
         # print()
         print(f"R_loss: {r_loss}")
         print(f"Elbo: {elbo}")
         print(f"KL weight: {kl_weight}")
-        print(f"Hamming distance: {hamming_distance}")
+        print(f"Hamming distance: {ham_dist}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
         # print()
         #return kl_weight*elbo, kl
@@ -202,10 +204,10 @@ class Trainer:
         # torch.save(open('outputs/train_kl_musicvae_batch', 'wb'), torch.tensor(train_kl))
         # torch.save(open('outputs/val_kl_musicvae_batch', 'wb'), torch.tensor(val_kl))
 
-        torch.save(torch.tensor(train_loss), open('scratch/outputs/train_loss_musicvae_batch', 'wb'))
-        torch.save(torch.tensor(val_loss), open('scratch/outputs/val_loss_musicvae_batch', 'wb'))
-        torch.save(torch.tensor(train_kl), open('scratch/outputs/train_kl_musicvae_batch', 'wb'))
-        torch.save(torch.tensor(val_kl), open('scratch/outputs/val_kl_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(train_loss), open('scratch/outputs/train_loss_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(val_loss), open('scratch/outputs/val_loss_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(train_kl), open('scratch/outputs/train_kl_musicvae_batch', 'wb'))
+        #torch.save(torch.tensor(val_kl), open('scratch/outputs/val_kl_musicvae_batch', 'wb'))
         
     def save_checkpoint(self, model, epoch, iter):
         print('Saving checkpoint')
@@ -238,7 +240,7 @@ class Trainer:
         else:
             if optimizer is None:
                 self.optimizer = torch.optim.Adam(model.parameters(), self.learning_rate)
-                self.scheduler = LambdaLR(self.optimizer, lr_decay)
+                self.scheduler = LambdaLR(self.optimizer, decay_old)
                 
             epoch = 1
             iter = 0

@@ -22,11 +22,11 @@ preprocessor:
     test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.0005 #0.001
+    learning_rate: 0.001 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
-    batch_size: &batchsize 8
+    batch_size: &batchsize 32
     print_every: 1
     checkpoint_every: 10000
     checkpoint_dir: 'checkpoint'

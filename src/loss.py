@@ -3,18 +3,16 @@ from torch.nn.functional import binary_cross_entropy, binary_cross_entropy_with_
 from torch.distributions.normal import Normal
 from torch.distributions.kl import kl_divergence
 import numpy as np
-
 import wandb
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def hamming_distance(s1, s2) -> int:
     """Return the Hamming distance between equal-length sequences."""
     if len(s1) != len(s2):
         raise ValueError("Undefined for sequences of unequal length.")
     return sum(el1 != el2 for el1, el2 in zip(s1, s2))
-
-
 
 def ELBO(pred, target, mu, sigma, free_bits):
     """
@@ -60,7 +58,7 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
 
     # create flat prediction ( one hot reconstruction)
     pred_max = torch.argmax(pred, dim=2)
-    flat_pred = torch.zeros(pred.size())
+    flat_pred = torch.zeros(pred.size(), device=device)
     batch_size = list(pred.size())[1]
     for i in range(256):
         for j in range(batch_size):
@@ -76,17 +74,15 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     print(norm_ham_dist)
 
     # calculate accuracy per batch, over all timesteps as classifier accuracy
-    acc = (target.argmax(-1) == flat_pred.argmax(-1)).float().detach().numpy()
-    acc_percentage = float(100 * acc.sum() / len(acc))
-    print(f"Accuracy: {acc_percentage} %")
+    with torch.no_grad():
+        target = target.cpu()
+        flat_pred = flat_pred.cpu()
+        acc = (target.argmax(-1) == flat_pred.argmax(-1)).float().detach().numpy()
+        acc_percentage = float(100 * acc.sum() / len(acc))
+        print(f"Accuracy: {acc_percentage} %")
 
-    #print(pred)
-    # print(pred.size())
-    # print(target.size())
-    # print('sum')
-    # print(pred.sum(dim=2))
-    # print(hamming_dist.mean())
-    #torch.set_printoptions(profile="default")
+
+
     wandb.log({"Hamming Dist": norm_ham_dist})
     return r_loss.to(device), kl_cost.to(device), kl_div.to(device), \
            norm_ham_dist, acc_percentage
