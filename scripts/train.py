@@ -8,6 +8,7 @@ import pandas as pd
 sys.path.append(".")
 
 from torch.utils.data import DataLoader
+import torch.nn as nn
 
 from src.model import *
 from src.trainer import *
@@ -59,11 +60,11 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
 
     # for testing purposes
     if use_fake_data:
-        X_train = generate_fake_songs(2, 10)
+        X_train = generate_fake_songs(32, 10)
         train_data = MidiDataset(X_train, song_paths=song_paths)
         train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
-        X_val = generate_fake_songs(2, 4)
+        X_val = generate_fake_songs(32, 4)
         val_data = MidiDataset(X_val, song_paths=song_paths)
         val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader
@@ -138,8 +139,10 @@ def main(args):
     # print(f"len Val data: {len(val_data)}")
     # print(f"len filepaths: {len(filepaths)}")
     model = load_model(args.model_type, model_params)
+    #model = model.to(device)
+    #model = torch.nn.DataParallel(model, device_ids=[0,1])
+    #print(f"device count: {torch.cuda.device_count()}")
     
-
     # Watch the model with weights and biases
     wandb.watch(model)
 
