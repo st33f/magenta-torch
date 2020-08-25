@@ -73,14 +73,17 @@ class Trainer:
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
         #elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
-        r_loss, kl_cost, kl_div = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
+        r_loss, kl_cost, kl_div, hamming_distance, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight*kl_cost
-        wandb.log({"KL Weight": kl_weight, "R_loss": r_loss})
+
+        wandb.log({"KL Weight": kl_weight, "R_loss": r_loss, "Hamming Distance": hamming_distance, "Accuracy": acc})
+        wandb.log({"Pred": wandb.Histogram(pred.detach().numpy())})
         # print()
         print(f"R_loss: {r_loss}")
         print(f"Elbo: {elbo}")
         print(f"KL weight: {kl_weight}")
+        print(f"Hamming distance: {hamming_distance}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
         # print()
         #return kl_weight*elbo, kl
@@ -139,7 +142,7 @@ class Trainer:
                         div = torch.mean(torch.tensor(batch_kl))
                         print('\n\n\n\nEpoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, loss_avg, div))
                         # send batch loss data to wandb
-                        wandb.log({"train ELBO (batch avg)": loss_avg, "train KL Div": div, "Epoch": epoch, "Iteration": iter, "LR": self.scheduler.get_lr()[0]})
+                        wandb.log({"train ELBO (batch avg)": loss_avg, "train KL Div": div, "Epoch": epoch, "Iteration": iter, "LR": self.scheduler.get_last_lr()})
 
                     if iter%self.checkpoint_every == 0:
                         self.save_checkpoint(model, epoch, iter)
