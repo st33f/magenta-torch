@@ -27,6 +27,9 @@ parser.add_argument('--model_type', type=str, default='lstm')
 parser.add_argument('--epochs', type=int, default=50)
 parser.add_argument('--resume', type=bool, default=False)
 parser.add_argument("--use_da", type=bool, default=True)
+parser.add_argument("--on_cluster", type=bool, default=False)
+
+
 
 # def load_extra_features(path):
 #     extra_features_df = pd.read_csv(path, header=0)
@@ -116,10 +119,13 @@ def main(args):
         config = yaml.load(config_file)
         model_params = config['model']
         trainer_params = config['trainer']
-        data_params = config['data']
+        if args.on_cluster == True:
+            data_params = config['das-data']
+        else:
+            data_params = config['data']
 
     # init weights and biases
-    wandb.init(project="master-thesis", config=config, dir="scratch/")
+    wandb.init(project="master-thesis", config=config)
     wandb.config.update({"epochs": args.epochs, "batch_size": trainer_params['batch_size']})
 
 

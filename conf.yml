@@ -26,12 +26,12 @@ trainer:
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
-    batch_size: &batchsize 64
+    batch_size: &batchsize 8
     print_every: 1
     checkpoint_every: 10000
     checkpoint_dir: 'checkpoint'
-    output_dir: '/var/scratch/swa420/outputs/accuracy_batch64'
-    use_danceability: &DA True
+    output_dir: 'outputs/initial_colab_data'
+    use_danceability: &DA False
     use_fake_data: False
     
 sampler:
@@ -52,6 +52,18 @@ model:
     use_danceability: *DA
 
 data: # Specify paths to data
+    train_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/X_train.pickle'
+    val_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/X_test.pickle'
+    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/I_train.pickle'
+    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/I_test.pickle'
+    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/T_train.pickle'
+    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/T_test.pickle'
+    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/train_paths.pickle'
+    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/test_paths.pickle'
+    danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
+    filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
+
+das-data:
     train_data: '/var/scratch/swa420/data/clean_midi_1/X_train.pickle'
     val_data: '/var/scratch/swa420/data/clean_midi_1/X_test.pickle'
     train_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_train.pickle'
@@ -61,7 +73,9 @@ data: # Specify paths to data
     train_song_paths: '/var/scratch/swa420/data/clean_midi_1/train_paths.pickle'
     val_song_paths: '/var/scratch/swa420/data/clean_midi_1/test_paths.pickle'
     danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
-    filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle' 
+    filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle'
+
+
 
 evaluation:
     model_path: '/Users/stefanwijtsma/code/magenta-torch/outputs/checkpoints/2020_07_31_01_13_30/model.pt'

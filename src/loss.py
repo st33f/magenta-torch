@@ -46,6 +46,7 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     Attempting to fix this loss function
     """
     device = pred.device
+    #r_loss = binary_cross_entropy_with_logits(pred, target, reduction='sum')
     r_loss = binary_cross_entropy(pred, target, reduction='sum')
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
@@ -53,8 +54,8 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     p = Normal(mu_prior, sigma_prior)
     q = Normal(mu, sigma)
     kl_div = kl_divergence(q, p)
-
     kl_cost = torch.max(torch.mean(kl_div) - free_bits, torch.tensor([0], dtype=torch.float, device=device))
+
     # create flat prediction ( one hot reconstruction)
     pred_max = torch.argmax(pred, dim=2)
     flat_pred = torch.zeros(pred.size(), device=device)
@@ -68,20 +69,23 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     #torch.set_printoptions(profile="full")
     #print(flat_pred)
     hamming_dist = hamming_distance(target.argmax(-1), flat_pred.argmax(-1))
-    print(hamming_dist)
+    # print("h dist")
+    # print(len(hamming_dist))
+    # print(hamming_dist)
+    # print(hamming_dist[0])
     norm_ham_dist = float(hamming_dist.sum() / len(hamming_dist))
-    print(norm_ham_dist)
 
     # calculate accuracy per batch, over all timesteps as classifier accuracy
     with torch.no_grad():
         target = target.cpu()
-        flat_pred = flat_pred.cpu()    
+        flat_pred = flat_pred.cpu()
         acc = (target.argmax(-1) == flat_pred.argmax(-1)).float().detach().numpy()
-        acc_percentage = float(100 * acc.sum() / len(acc))
-        print(f"Accuracy: {acc_percentage} %")    
+        # print(f"acc sum + len: {acc.sum(), len(acc)}")
+        # print(acc)
+        # print(len(acc))
+        # print(len(acc[0]))
+        acc_percentage = float(100 * acc.sum() / (len(acc) * batch_size))
+        print(f"Accuracy: {acc_percentage} %")
 
-
-
-    wandb.log({"Hamming Dist": norm_ham_dist})
     return r_loss.to(device), kl_cost.to(device), kl_div.to(device), \
-           norm_ham_dist, acc_percentage
+           norm_ham_dist.to(device), acc_percentage.to(device)
