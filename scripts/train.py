@@ -127,6 +127,7 @@ def main(args):
     # init weights and biases
     wandb.init(project="master-thesis", config=config)
     wandb.config.update({"epochs": args.epochs, "batch_size": trainer_params['batch_size']})
+    wandb.run.summary["On_cluster"] = args.on_cluster
 
 
     #filepaths, danceability = load_extra_features(args.extra_features)
@@ -156,7 +157,7 @@ def main(args):
 
     train(model, trainer, train_data, val_data, args.epochs, args.resume)
 
-    # save model to wandbb
+    # save model to wandb
     torch.save(model.state_dict(), os.path.join(wandb.run.dir, 'model.pt'))
 
 

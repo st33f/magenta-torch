@@ -1,5 +1,6 @@
 from src.checkpoint import Checkpoint
 from src.loss import ELBO, custom_ELBO
+from src.plot import plot_pred_and_target
 
 import torch
 import torch.optim as optim
@@ -68,7 +69,18 @@ class Trainer:
         
     def KL_annealing(self, step, start, end):
         return end + (start - end)*(self.KL_rate)**step
-    
+
+    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None):
+        pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+
+        with torch.no_grad():
+            batch_size = list(pred.size())[1]
+            batch = batch.cpu()
+            pred_viz = pred.cpu()
+            for example in batch_size:
+                plot_pred_and_target(pred_viz[:,example,:].detach().numpy(),
+                                     batch[:,example,:].detach().numpy())
+
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
@@ -76,14 +88,14 @@ class Trainer:
         r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight*kl_cost
-        pred_viz = pred.cpu()
-        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred_viz.detach().numpy())})
-        # print()
+
+        print(f"Scores for batch: {step}")
         print(f"R_loss: {r_loss}")
         print(f"Elbo: {elbo}")
         print(f"KL weight: {kl_weight}")
         print(f"Hamming distance: {ham_dist}")
-        # print(f"Batch mean KL Div: {kl_div.mean()}")
+        print(f"Batch mean KL Div: {kl_div.mean()}")
+        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
         # print()
         #return kl_weight*elbo, kl
         return elbo, kl_div.mean(), r_loss, acc, ham_dist
@@ -187,6 +199,9 @@ class Trainer:
                             # tqdm
                             #t.set_postfix(loss=f"Elbo: {elbo}")
                             t.update()
+                            if idx == len(val_data) - 1:
+                                self.plot_last_batch(model, data, use_teacher_forcing=False, da=None)
+
                         # get avg values for validation dataset
                         val_elbo.append(torch.mean(torch.tensor(batch_loss)))
                         val_kl.append(torch.mean(torch.tensor(batch_kl)))

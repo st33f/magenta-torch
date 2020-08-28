@@ -56,36 +56,26 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     kl_div = kl_divergence(q, p)
     kl_cost = torch.max(torch.mean(kl_div) - free_bits, torch.tensor([0], dtype=torch.float, device=device))
 
-    # create flat prediction ( one hot reconstruction)
-    pred_max = torch.argmax(pred, dim=2)
-    flat_pred = torch.zeros(pred.size(), device=device)
-    batch_size = list(pred.size())[1]
-    for i in range(256):
-        for j in range(batch_size):
-            # print(argmax[i])
-            flat_pred[i, j, pred_max[i, j]] = 1
-
-    # calc hamming distance
-    #torch.set_printoptions(profile="full")
-    #print(flat_pred)
-    hamming_dist = hamming_distance(target.argmax(-1), flat_pred.argmax(-1))
-    # print("h dist")
-    # print(len(hamming_dist))
-    # print(hamming_dist)
-    # print(hamming_dist[0])
-    norm_ham_dist = float(hamming_dist.sum() / len(hamming_dist))
-
-    # calculate accuracy per batch, over all timesteps as classifier accuracy
+    # create flat prediction ( one hot reconstruction ) and additional metrics
     with torch.no_grad():
+        pred_max = torch.argmax(pred, dim=2)
+        flat_pred = torch.zeros(pred.size(), device=device)
+        batch_size = list(pred.size())[1]
+        for i in range(256):
+            for j in range(batch_size):
+                # print(argmax[i])
+                flat_pred[i, j, pred_max[i, j]] = 1
+
+        # calc hamming distance
+        hamming_dist = hamming_distance(target.argmax(-1), flat_pred.argmax(-1))
+        norm_ham_dist = float(hamming_dist.sum() / len(hamming_dist))
+
+        # calculate accuracy per batch, over all timesteps as classifier accuracy
         target = target.cpu()
         flat_pred = flat_pred.cpu()
         acc = (target.argmax(-1) == flat_pred.argmax(-1)).float().detach().numpy()
-        # print(f"acc sum + len: {acc.sum(), len(acc)}")
-        # print(acc)
-        # print(len(acc))
-        # print(len(acc[0]))
         acc_percentage = float(100 * acc.sum() / (len(acc) * batch_size))
-        print(f"Accuracy: {acc_percentage} %")
+        #print(f"Accuracy: {acc_percentage} %")
 
     return r_loss.to(device), kl_cost.to(device), kl_div.to(device), \
-           norm_ham_dist.to(device), acc_percentage.to(device)
+           norm_ham_dist, acc_percentage
