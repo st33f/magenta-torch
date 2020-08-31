@@ -70,6 +70,7 @@ class Trainer:
     def KL_annealing(self, step, start, end):
         return end + (start - end)*(self.KL_rate)**step
 
+
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None):
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
@@ -78,7 +79,7 @@ class Trainer:
             batch = batch.cpu()
             pred_viz = pred.cpu()
             pred_max = torch.argmax(pred_viz, dim=2)
-            flat_pred = torch.zeros(pred_viz.size(), device=device)
+            flat_pred = torch.zeros(pred_viz.size(), device='cpu')
             for i in range(256):
                 for j in range(batch_size):
                     # print(argmax[i])
@@ -117,7 +118,7 @@ class Trainer:
         #print(f"elbo train batch: {elbo}")
 
         # send batch loss data to wandb
-        wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.cpu(), "train KL Div": kl,\
+        wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl,
                    "LR": self.scheduler.get_last_lr(), "Hamming Dist": ham_dist})
 
         # log additional metrics

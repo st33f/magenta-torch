@@ -398,3 +398,5 @@ outputs
 /pickles_small/
 /pickles_smallest/
 /pickles_small.zip
+/scratch/
+conf.yml.*
