@@ -39,6 +39,7 @@ class Trainer:
                  batch_size=512, 
                  print_every=1000, 
                  checkpoint_every=10000,
+                 plot_every=1000,
                  checkpoint_dir='checkpoint',
                  output_dir='outputs',
                  use_danceability=True,
@@ -52,9 +53,11 @@ class Trainer:
         self.batch_size = batch_size
         self.print_every = print_every
         self.checkpoint_every = checkpoint_every
+        self.plot_every = plot_every
         self.output_dir = output_dir
         self.use_danceability = use_danceability
         self.use_fake_data = use_fake_data
+
         
     def inverse_sigmoid(self,step):
         """
@@ -71,23 +74,26 @@ class Trainer:
         return end + (start - end)*(self.KL_rate)**step
 
 
-    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None):
+    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=10, is_eval=True):
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
-
+        print(f"pred: {pred.size()}")
+        print(pred)
         with torch.no_grad():
             batch_size = list(pred.size())[1]
             batch = batch.cpu()
             pred_viz = pred.cpu()
             pred_max = torch.argmax(pred_viz, dim=2)
+            print(f"pred max {pred_max.size()}")
+            print(pred_max)
             flat_pred = torch.zeros(pred_viz.size(), device='cpu')
             for i in range(256):
                 for j in range(batch_size):
                     # print(argmax[i])
                     flat_pred[i, j, pred_max[i, j]] = 1
-
-            for example in range(batch_size):
+            print(f"flat-pred: {flat_pred}")
+            for example in range(num_plots):
                 plot_pred_and_target(flat_pred[:,example,:].detach().numpy(),
-                                     batch[:,example,:].detach().numpy())
+                                     batch[:,example,:].detach().numpy(), is_eval)
 
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
@@ -146,6 +152,7 @@ class Trainer:
             model.train()
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
+
                     # first, get data AND danceability from the dataset
                     data, da = batch
                     data = data.transpose(0, 1).squeeze()
@@ -171,6 +178,13 @@ class Trainer:
 
                     if iter%self.checkpoint_every == 0:
                         self.save_checkpoint(model, epoch, iter)
+
+                    # plot the pred and targets as pianoroll
+                    if iter%self.plot_every == 0:
+                        if use_da:
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
+                        else:
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")

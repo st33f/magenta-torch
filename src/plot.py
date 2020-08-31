@@ -7,7 +7,8 @@ import pretty_midi
 sys.path.append(".")
 
 import numpy as np
-from helpers.fake_dataset import generate_fake_songs
+#from helpers.fake_dataset import generate_fake_songs
+from src.helpers import generate_fake_songs
 #from src.reconstruction import *
 import wandb
 
@@ -473,7 +474,7 @@ def plot_multitrack(
 
 
 # This is for testing the plotting function
-'''
+
 fake_data = generate_fake_songs(1, 1)
 
 midi_start = 24
@@ -502,9 +503,9 @@ data = [numpy_midi, numpy_midi]
 
 first_half = pr.Multitrack(tracks=[numpy_midi, np2], beat_resolution=4)
 true_track = pr.Track(data_padded[30:158, :])
-'''
 
-def plot_pred_and_target(pred, target):
+
+def plot_pred_and_target(pred, target, is_eval=True):
     npad = ((0, 0), (48, 19))
 
     # first pad to full 128 midi notes
@@ -519,7 +520,10 @@ def plot_pred_and_target(pred, target):
     to_plot = pr.Multitrack(tracks=[pred_track, target_track], beat_resolution=4)
     fig, (ax1) = plot_multitrack(to_plot, mode="stacked", grid="both")
     ax1[0].set_ylim(bottom=36, top=116)
-    wandb.log({"Pianoroll": fig})
+    if is_eval:
+        wandb.log({"Eval Pianorolls": fig})
+    else:
+        wandb.log({"Training Pianorolls": fig})
     plt.close('all')
     #plt.show()
 
