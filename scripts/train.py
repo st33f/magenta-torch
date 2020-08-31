@@ -119,7 +119,8 @@ def main(args):
         config = yaml.load(config_file)
         model_params = config['model']
         trainer_params = config['trainer']
-        if args.on_cluster == True:
+        print(f"On_cluster: {args.on_cluster is True}")
+        if args.on_cluster is True:
             data_params = config['das-data']
         else:
             data_params = config['data']
