@@ -180,7 +180,7 @@ class Danceability_BiGRUEncoder(nn.Module):
         batch_size = input.size(1)
 
         #print(f"batch size layers.py: {batch_size}")
-        print(f"dance before: {da.size()}")
+        #print(f"dance before: {da.size()}")
         if da is not None:
             try:
                 danceability = da.view(batch_size, 1)
