@@ -18,7 +18,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"device: {device}")
 
 def decay_old(x):
-    return 0.01 + (0.99)*(0.9999)**x
+    return 0.001 + (0.999)*(0.9999)**x
 
 def lr_decay(global_step,
     init_learning_rate = 1e-3,
@@ -76,12 +76,13 @@ class Trainer:
 
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=10, is_eval=True):
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+        print("PLOTTING ------")
         print(f"pred: {pred.size()}")
         print(pred)
         with torch.no_grad():
             batch_size = list(pred.size())[1]
-            batch = batch.cpu()
-            pred_viz = pred.cpu()
+            batch = batch.detach().cpu()
+            pred_viz = pred.detach().cpu()
             pred_max = torch.argmax(pred_viz, dim=2)
             print(f"pred max {pred_max.size()}")
             print(pred_max)

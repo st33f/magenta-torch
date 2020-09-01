@@ -22,16 +22,16 @@ preprocessor:
     test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.001 #0.001
+    learning_rate: 0.0005 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
-    batch_size: &batchsize 64
+    batch_size: &batchsize 8
     print_every: 1
     checkpoint_every: 10000
     plot_every: 10
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/correct_logging_plain'
+    output_dir: 'scratch/outputs/b32'
     use_danceability: &DA False
     use_fake_data: False
     
