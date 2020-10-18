@@ -169,6 +169,7 @@ class DanceabilityGRUVAE(nn.Module):
         return out, mu, sigma, z
     
     def reconstruct(self, x, temperature):
+        x = x.to(device)
         print(f"X: {x}")
         batch_size = x.size(1)
         h_enc = self.encoder.init_hidden(batch_size)
@@ -241,6 +242,17 @@ class MusicGRUVAE(nn.Module):
         z = self.z_embedding(mu + sigma * epsilon)
         h_dec = self.decoder.init_hidden(batch_size)
         out = self.decoder(x, z, h_dec, use_teacher_forcing)
+
+        #### This is for printing Z
+        torch.set_printoptions(profile="full")
+        #print("Printing Z....")
+        #print(z.size())
+        #print(z)
+        #print("Printing OUT.....")
+        #print(out.size())
+        #print(out)
+        torch.set_printoptions(profile="default")
+
         return out, mu, sigma, z
 
     def reconstruct(self, x, temperature):
@@ -251,5 +263,7 @@ class MusicGRUVAE(nn.Module):
             epsilon = torch.randn_like(mu, device=device)
         z = self.z_embedding(mu + sigma * epsilon)
         h_dec = self.decoder.init_hidden(batch_size)
+
+        out = self.decoder.reconstruct(z, h_dec, temperature)
         out = self.decoder.reconstruct(z, h_dec.to(device), temperature)
         return out
