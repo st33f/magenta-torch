@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.distributions.categorical import Categorical
 
+import wandb
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -262,7 +263,7 @@ class HierarchicalGRUDecoder(nn.Module):
             nn.Softmax(dim=2)
         )
 
-    def forward(self, target, latent, h0, use_teacher_forcing=True, temperature=1.0):
+    def forward(self, target, latent, h0, use_teacher_forcing=False, temperature=1.0):
         batch_size = target.size(1)
         target = target.to(device)
 
@@ -315,8 +316,10 @@ class HierarchicalGRUDecoder(nn.Module):
             h0_dec = torch.randn(self.num_layers, batch_size, self.hidden_size, dtype=torch.float, device=device)
             for note_idx in range(self.seq_length):
                 e = torch.cat((prev_note, embedding), -1)
+                e = e.to(device)
                 prev_note, h0_dec = self.gru(e, h0_dec)
                 prev_note = self.out(prev_note)
+                prev_note = prev_note.to(device)
                 prev_note = Categorical(prev_note / temperature).sample()
                 prev_note = one_hot[prev_note]
                 out[note_idx, :, :] = prev_note.squeeze()
@@ -356,8 +359,15 @@ class BiGRUEncoder(nn.Module):
         batch_size = input.size(1)
         _, h_n = self.bigru(input, h0)
         h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
+        print("printing h_n:.......")
+        print(h_n)
+        wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
         mu = self.mu(h_n)
         sigma = self.softplus(self.sigma(h_n))
+        #torch.set_printoptions(profile="full")
+        #print(h_n)
+        #print(sigma)
+        #torch.set_printoptions(profile="default")
         return mu, sigma
 
     def init_hidden(self, batch_size=1):

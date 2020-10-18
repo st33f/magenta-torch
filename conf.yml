@@ -22,29 +22,29 @@ preprocessor:
     test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.0005 #0.001
+    learning_rate: 0.00005 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000
-    batch_size: &batchsize 8
+    batch_size: &batchsize 32
     print_every: 1
     checkpoint_every: 10000
     plot_every: 10
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/b32'
+    output_dir: 'scratch/outputs/no_silent_note_big_lr'
     use_danceability: &DA False
     use_fake_data: False
     
 sampler:
     free_bits: 256
-    output_dir: 'outputs'
+    output_dir: 'sampler'
     
 model:
     num_subsequences: 16
     max_sequence_length: *T
     sequence_length: 16
-    encoder_input_size: 61
-    decoder_input_size: 61
+    encoder_input_size: 60
+    decoder_input_size: 60
     encoder_hidden_size: 2048
     decoder_hidden_size: 1024
     latent_dim: 512
@@ -65,14 +65,14 @@ data: # Specify paths to data
     filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
 
 das-data:
-    train_data: '/var/scratch/swa420/data/clean_midi_1/X_train.pickle'
-    val_data: '/var/scratch/swa420/data/clean_midi_1/X_test.pickle'
-    train_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_train.pickle'
-    val_instrument_data: '/var/scratch/swa420/data/clean_midi_1/I_test.pickle'
-    train_tempo_data: '/var/scratch/swa420/data/clean_midi_1/T_train.pickle'
-    val_tempo_data: '/var/scratch/swa420/data/clean_midi_1/T_test.pickle'
-    train_song_paths: '/var/scratch/swa420/data/clean_midi_1/train_paths.pickle'
-    val_song_paths: '/var/scratch/swa420/data/clean_midi_1/test_paths.pickle'
+    train_data: '/var/scratch/swa420/data/no_silent_note/X_train.pickle'
+    val_data: '/var/scratch/swa420/data/no_silent_note/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data/no_silent_note/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data/no_silent_note/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data/no_silent_note/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data/no_silent_note/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data/no_silent_note/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data/no_silent_note/test_paths.pickle'
     danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
     filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle'
 

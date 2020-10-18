@@ -75,13 +75,20 @@ class Trainer:
 
 
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=10, is_eval=True):
-        pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
-        print("PLOTTING ------")
-        print(f"pred: {pred.size()}")
-        print(pred)
-        with torch.no_grad():
-            batch_size = list(pred.size())[1]
+        model.eval()
+        #pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+        
+        #pred = model.reconstruct(batch, 1)
+        #model.train()
+        with torch.no_grad():    
+            #pred = model.reconstruct(batch, 1)
+            pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
             batch = batch.detach().cpu()
+            print("PLOTTING ------")
+            print(f"pred: {pred.size()}")
+            print(pred)
+ 
+            batch_size = list(pred.size())[1]
             pred_viz = pred.detach().cpu()
             pred_max = torch.argmax(pred_viz, dim=2)
             print(f"pred max {pred_max.size()}")
@@ -95,23 +102,25 @@ class Trainer:
             for example in range(num_plots):
                 plot_pred_and_target(flat_pred[:,example,:].detach().numpy(),
                                      batch[:,example,:].detach().numpy(), is_eval)
+        model.train()
 
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
-        batch.to(device)
+        # batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
         #elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
         r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
-        elbo = r_loss + kl_weight*kl_cost
+        elbo = 790 * (r_loss + kl_weight*kl_cost)
         print(f"Scores for batch: {step}")
         print(f"R_loss: {r_loss}")
         print(f"Elbo: {elbo}")
         print(f"KL weight: {kl_weight}")
         print(f"Hamming distance: {ham_dist}")
         print(f"Batch mean KL Div: {kl_div.mean()}")
-        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
+        # wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
         # print()
         #return kl_weight*elbo, kl
+        wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return elbo, kl_div.mean(), r_loss, acc, ham_dist
         
     def train_batch(self, iter, model, batch, da=None):
@@ -150,10 +159,10 @@ class Trainer:
             # save the randomly initialized model right away
             # self.save_checkpoint(model, epoch, iter)
             batch_loss, batch_kl = [], []
-            model.train()
+            #model.train()
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
-
+                    model.train()
                     # first, get data AND danceability from the dataset
                     data, da = batch
                     data = data.transpose(0, 1).squeeze()
@@ -183,9 +192,9 @@ class Trainer:
                     # plot the pred and targets as pianoroll
                     if iter%self.plot_every == 0:
                         if use_da:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=2, is_eval=False)
                         else:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=2, is_eval=False)
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")

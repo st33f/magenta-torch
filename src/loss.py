@@ -20,6 +20,7 @@ def ELBO(pred, target, mu, sigma, free_bits):
     Return KL Divergence and KL Regularization using free bits
     """
     device = pred.device
+    #pred = pred.to('device')
     # Reconstruction error
     # Pytorch cross_entropy combines LogSoftmax and NLLLoss
     likelihood = -binary_cross_entropy(pred, target, reduction='sum')
@@ -45,10 +46,14 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     """
     Attempting to fix this loss function
     """
-    device = pred.device
-    #r_loss = binary_cross_entropy_with_logits(pred, target, reduction='sum')
-    r_loss = binary_cross_entropy(pred, target, reduction='sum')
-    r_loss = r_loss.to(device)
+    #device = pred.device
+    #pred = pred.to(device)
+    #target = target.to(device)
+    print(f"target: {target}")
+    r_loss = binary_cross_entropy_with_logits(pred, target, reduction='sum')
+    r_loss = torch.mean(r_loss)
+    #r_loss = binary_cross_entropy(pred, target, reduction='sum')
+    #r_loss = r_loss.to(device)
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
     mu_prior = torch.tensor([0], dtype=torch.float, device=device)
