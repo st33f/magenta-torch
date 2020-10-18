@@ -2,7 +2,7 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'pickle_data/colab_data'
+    pickle_store_folder: 'pickle_data/no_silent_note'
     include_unknown: True
     only_unknown: True
     low_crop: 24 
@@ -13,7 +13,7 @@ preprocessor:
     include_only_monophonic_instruments: False
     max_voices_per_track: 1
     max_voices: 4
-    include_silent_note: True
+    include_silent_note: False
     velocity_threshold: 0.5
     instrument_attach_method: '1hot-category'
     attach_instruments: False
@@ -28,8 +28,8 @@ trainer:
     sampling_rate: 2000
     batch_size: &batchsize 8
     print_every: 1
-    checkpoint_every: 10000
-    plot_every: 10
+    checkpoint_every: 1000000
+    plot_every: 1
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/b32'
     use_danceability: &DA False
@@ -43,8 +43,8 @@ model:
     num_subsequences: 16
     max_sequence_length: *T
     sequence_length: 16
-    encoder_input_size: 61
-    decoder_input_size: 61
+    encoder_input_size: 60
+    decoder_input_size: 60
     encoder_hidden_size: 2048
     decoder_hidden_size: 1024
     latent_dim: 512
@@ -53,14 +53,14 @@ model:
     use_danceability: *DA
 
 data: # Specify paths to data
-    train_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/X_train.pickle'
-    val_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/X_test.pickle'
-    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/I_train.pickle'
-    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/I_test.pickle'
-    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/T_train.pickle'
-    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/T_test.pickle'
-    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/train_paths.pickle'
-    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickles_smallest/test_paths.pickle'
+    train_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note/X_train.pickle'
+    val_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note/X_test.pickle'
+    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note/I_train.pickle'
+    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note/I_test.pickle'
+    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torchp/ickle_data/no_silent_note/T_train.pickle'
+    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note//T_test.pickle'
+    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note/train_paths.pickle'
+    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/no_silent_note/test_paths.pickle'
     danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
     filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
 

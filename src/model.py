@@ -251,5 +251,5 @@ class MusicGRUVAE(nn.Module):
             epsilon = torch.randn_like(mu, device=device)
         z = self.z_embedding(mu + sigma * epsilon)
         h_dec = self.decoder.init_hidden(batch_size)
-        out = self.decoder.reconstruct(z, h_dec, temperature)
+        out = self.decoder.reconstruct(z, h_dec.to(device), temperature)
         return out

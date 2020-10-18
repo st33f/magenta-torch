@@ -80,6 +80,10 @@ class MidiPreprocessor:
             self.instrument_dim = 128
         elif instrument_attach_method == 'khot-instrument':
             self.instrument_dim = 7
+
+
+    def drop_empty_seqs(self, X):
+        pass
             
     def load_rolls(self, path, name, save_preprocessed_midi):
 
@@ -421,7 +425,9 @@ class MidiPreprocessor:
                 D = np.split(D, number_of_splits)
                 D = np.asarray(D)
 
-
+            print(X)
+            print(X[0])
+            print(sum(X[0][0]))
             return X, Y, instrument_feature_matrix, tempo, V, D
         else:
             return None, None, None, None, None, None

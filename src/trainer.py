@@ -75,11 +75,14 @@ class Trainer:
 
 
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=10, is_eval=True):
-        pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
-        print("PLOTTING ------")
-        print(f"pred: {pred.size()}")
-        print(pred)
+        model.eval()
+        #pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+
         with torch.no_grad():
+            pred = model.reconstruct(batch, 1)
+            print("PLOTTING ------")
+            print(f"pred: {pred.size()}")
+            print(pred)
             batch_size = list(pred.size())[1]
             batch = batch.detach().cpu()
             pred_viz = pred.detach().cpu()
@@ -142,6 +145,7 @@ class Trainer:
             print("Training MusicVAE model WITH Danceability as additional feature ")
         else:
             print('Training regular MusicVAE')
+
         print(f"Training batches: {len(train_data)}")
         print(f"Val data batches: {len(val_data)}")
         print()
@@ -150,10 +154,10 @@ class Trainer:
             # save the randomly initialized model right away
             # self.save_checkpoint(model, epoch, iter)
             batch_loss, batch_kl = [], []
-            model.train()
+            #model.train()
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
-
+                    model.train()
                     # first, get data AND danceability from the dataset
                     data, da = batch
                     data = data.transpose(0, 1).squeeze()
