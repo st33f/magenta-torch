@@ -19,6 +19,15 @@ from helpers.fake_dataset import generate_fake_songs
 
 import wandb
 
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 # General settings
 parser = argparse.ArgumentParser()
@@ -27,7 +36,8 @@ parser.add_argument('--model_type', type=str, default='lstm')
 parser.add_argument('--epochs', type=int, default=50)
 parser.add_argument('--resume', type=bool, default=False)
 parser.add_argument("--use_da", type=bool, default=True)
-parser.add_argument("--on_cluster", type=bool, default=False)
+parser.add_argument("--on_cluster", type=str2bool, nargs='?',
+                        const=True, default=False)
 
 
 
@@ -119,8 +129,8 @@ def main(args):
         config = yaml.load(config_file)
         model_params = config['model']
         trainer_params = config['trainer']
-        print(f"On_cluster: {args.on_cluster is True}")
-        if args.on_cluster is True:
+        print(f"On_cluster: {args.on_cluster}")
+        if args.on_cluster == True:
             data_params = config['das-data']
         else:
             data_params = config['data']

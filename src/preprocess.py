@@ -82,9 +82,37 @@ class MidiPreprocessor:
             self.instrument_dim = 7
 
 
-    def drop_empty_seqs(self, X):
-        pass
-            
+    def drop_empty_seqs(self, X, Y, V, D, silent_threshold=32):
+        # print(X.shape)
+        # print(Y.shape)
+        # print(V.shape)
+        # print(D.shape)
+        to_drop = []
+        for k, section in enumerate(X):
+            section_silents = 0
+            # print(section.shape)
+            for tick in section:
+                # print(tick.shape)
+                # print(tick)
+                section_silents += tick[-1]
+                # if tick[-1] == 1:
+                #     print(tick)
+            if section_silents > silent_threshold:
+                to_drop.append(k)
+        print(to_drop)
+        clean_X = np.delete(X, to_drop, axis=0)
+
+        clean_Y = np.delete(Y, to_drop, axis=0)
+        clean_V = np.delete(V, to_drop, axis=0)
+        clean_D = np.delete(D, to_drop, axis=0)
+
+        # print(clean_X.shape)
+        # print(clean_Y.shape)
+        # print(clean_V.shape)
+        # print(clean_D.shape)
+        return clean_X, clean_Y, clean_V, clean_D, len(to_drop)
+
+
     def load_rolls(self, path, name, save_preprocessed_midi):
 
         #try loading the midi file
@@ -425,9 +453,9 @@ class MidiPreprocessor:
                 D = np.split(D, number_of_splits)
                 D = np.asarray(D)
 
-            print(X)
-            print(X[0])
-            print(sum(X[0][0]))
+            # print(X)
+            # print(X[0])
+            # print(sum(X[0][0]))
             return X, Y, instrument_feature_matrix, tempo, V, D
         else:
             return None, None, None, None, None, None
@@ -445,6 +473,9 @@ class MidiPreprocessor:
         V_list = []
         D_list = []
         no_imported = 0
+        n_input_seqs = 0
+        n_dropped = 0
+
         for path, subdirs, files in os.walk(folder):
             for name in files:
                 _path = path.replace('\\', '/') + '/'
@@ -482,13 +513,23 @@ class MidiPreprocessor:
 
                             X, Y, I, T, V, D = self.load_rolls(_path, _name, save_preprocessed_midi)
 
+
+
                             if X is not None and Y is not None:
-                                X_list.append(X)
-                                Y_list.append(Y)
+                                n_input_seqs += X.shape[0]
+                                clean_x, clean_y, clean_v, clean_d, dropped = self.drop_empty_seqs(X, Y, V, D)
+                                n_dropped += dropped
+
+                                X_list.append(clean_x)
+                                Y_list.append(clean_y)
+                                V_list.append(clean_v)
+                                D_list.append(clean_d)
+                                # X_list.append(X)
+                                # Y_list.append(Y)
                                 I_list.append(I)
                                 T_list.append(T)
-                                V_list.append(V)
-                                D_list.append(D)
+                                # V_list.append(V)
+                                # D_list.append(D)
                                 paths.append(_path + _name)
                                 c_classes.append(C)
                                 no_imported += 1
@@ -500,6 +541,10 @@ class MidiPreprocessor:
         assert(len(X_list) == len(T_list))
         assert(len(X_list) == len(D_list))
         assert(len(X_list) == len(V_list))
+
+        print(f"Sequences (16 bars) imported: {n_input_seqs}")
+        print(f"Sequences (silent) dropped: {n_dropped}")
+        print(f"Percentage silent sequences: {round(n_dropped / n_input_seqs *100, 2)} %")
 
         unique, counts = np.unique(c_classes, return_counts=True)
 

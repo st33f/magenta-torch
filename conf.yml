@@ -2,7 +2,7 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'pickle_data/no_silent_note'
+    pickle_store_folder: 'pickle_data/new_preprocess_test_32'
     include_unknown: True
     only_unknown: True
     low_crop: 24 
