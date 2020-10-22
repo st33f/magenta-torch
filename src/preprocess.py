@@ -82,8 +82,8 @@ class MidiPreprocessor:
             self.instrument_dim = 7
 
 
-    def drop_empty_seqs(self, X, Y, V, D, silent_threshold=32):
-        # print(X.shape)
+    def drop_empty_seqs(self, X, Y, V, D, silent_threshold=8):
+        print(X.shape)
         # print(Y.shape)
         # print(V.shape)
         # print(D.shape)
@@ -92,13 +92,16 @@ class MidiPreprocessor:
             section_silents = 0
             # print(section.shape)
             for tick in section:
-                # print(tick.shape)
-                # print(tick)
-                section_silents += tick[-1]
+                if tick[-1] == 1:
+                    section_silents += tick[-1]
+                    if section_silents > silent_threshold:
+                        to_drop.append(k)
+                        break
+                else:
+                    section_silents = 0
                 # if tick[-1] == 1:
                 #     print(tick)
-            if section_silents > silent_threshold:
-                to_drop.append(k)
+
         print(to_drop)
         clean_X = np.delete(X, to_drop, axis=0)
 
@@ -106,7 +109,7 @@ class MidiPreprocessor:
         clean_V = np.delete(V, to_drop, axis=0)
         clean_D = np.delete(D, to_drop, axis=0)
 
-        # print(clean_X.shape)
+        print(clean_X.shape)
         # print(clean_Y.shape)
         # print(clean_V.shape)
         # print(clean_D.shape)

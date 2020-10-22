@@ -2,7 +2,7 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'pickle_data/new_preprocess_test_32'
+    pickle_store_folder: 'pickle_data/new_preprocess_test_8_no_silent_note'
     include_unknown: True
     only_unknown: True
     low_crop: 24 
@@ -13,7 +13,7 @@ preprocessor:
     include_only_monophonic_instruments: False
     max_voices_per_track: 1
     max_voices: 4
-    include_silent_note: False
+    include_silent_note: True
     velocity_threshold: 0.5
     instrument_attach_method: '1hot-category'
     attach_instruments: False
