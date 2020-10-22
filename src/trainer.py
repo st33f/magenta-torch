@@ -155,7 +155,7 @@ class Trainer:
         # log additional metrics
         wandb.log({ "training R_loss": r_loss })#, "Training Accuracy": acc})
 
-        return elbo.item(), kl_div.item()
+        return elbo.item(), kl_div
         
     def train_epochs(self, model, start_epoch, iter, end_epoch, train_data, val_data=None):
         train_loss, train_kl = [], []
