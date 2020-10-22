@@ -131,7 +131,7 @@ class Trainer:
     def computer_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
-        r_loss, kl_cost, kl_div = flat_ELBO(pred, batch)
+        r_loss, kl_cost, kl_div = flat_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight * kl_cost
         return elbo, r_loss, kl_div

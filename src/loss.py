@@ -89,12 +89,23 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
 
 
 def flat_ELBO(pred, target, mu, sigma, free_bits):
+    pred = torch.transpose(pred, 0, 1)
+    target = torch.transpose(target, 0, 1)
+
     # create flat prediction - get indexes
-    flat_pred = torch.argmax(pred, dim=2)
-    flat_target = torch.argmax(target, dim=2)
+    flat_pred = torch.argmax(pred, dim=1)
+    flat_target = torch.argmax(target, dim=1)
+
+    print("FLAT TARGETS")
+    print(flat_pred.shape)
+    print(flat_pred)
+    print()
+    print(flat_target.shape)
+    print(flat_target)
 
     # pass to Cross entropy, divide by batch size
-    r_loss = cross_entropy(flat_pred, flat_target, reduction='sum').div(pred.size(1))
+    print(pred.shape)
+    r_loss = cross_entropy(pred, flat_target, reduction='sum').div(pred.size(1))
 
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
