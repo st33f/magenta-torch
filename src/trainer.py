@@ -131,6 +131,7 @@ class Trainer:
     def computer_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+
         r_loss, kl_cost, kl_div = flat_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight * kl_cost
@@ -155,7 +156,7 @@ class Trainer:
         # log additional metrics
         wandb.log({ "training R_loss": r_loss })#, "Training Accuracy": acc})
 
-        return elbo.item(), kl_div
+        return elbo.item(), torch.mean(kl_div)
         
     def train_epochs(self, model, start_epoch, iter, end_epoch, train_data, val_data=None):
         train_loss, train_kl = [], []
