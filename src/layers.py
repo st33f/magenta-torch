@@ -374,7 +374,7 @@ class BiGRUEncoder(nn.Module):
         # Bidirectional gru so num_layers*2
         return torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device)
 
-    class BiGRU_fixed_sigma_Encoder(nn.Module):
+class BiGRU_fixed_sigma_Encoder(nn.Module):
         """
         Bi-directional GRU encoder from MusicVAE
         Inputs:

@@ -1,5 +1,5 @@
 import torch
-from torch.nn.functional import binary_cross_entropy, binary_cross_entropy_with_logits
+from torch.nn.functional import binary_cross_entropy, binary_cross_entropy_with_logits, cross_entropy
 from torch.distributions.normal import Normal
 from torch.distributions.kl import kl_divergence
 import numpy as np
@@ -52,8 +52,8 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
     #device = pred.device
     #pred = pred.to(device)
     #target = target.to(device)
-    print(f"target: {target}")
-    print(f"pred: {pred}")
+    print(f"target: {target.size()}")
+    print(f"pred: {pred.size()}")
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
     mu_prior = torch.tensor([0], dtype=torch.float, device=device)
@@ -85,3 +85,23 @@ def custom_ELBO(pred, target, mu, sigma, free_bits):
 
     return r_loss.to(device), kl_cost.to(device), kl_div.to(device), \
            norm_ham_dist, acc_percentage
+
+
+
+def flat_ELBO(pred, target, mu, sigma, free_bits):
+    # create flat prediction - get indexes
+    flat_pred = torch.argmax(pred, dim=2)
+    flat_target = torch.argmax(target, dim=2)
+
+    # pass to Cross entropy, divide by batch size
+    r_loss = cross_entropy(flat_pred, flat_target, reduction='sum').div(pred.size(1))
+
+    # Regularization error
+    sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
+    mu_prior = torch.tensor([0], dtype=torch.float, device=device)
+    p = Normal(mu_prior, sigma_prior)
+    q = Normal(mu, sigma)
+    kl_div = kl_divergence(q, p)
+    kl_cost = torch.max(torch.mean(kl_div) - free_bits, torch.tensor([0], dtype=torch.float, device=device))
+
+    return r_loss.to(device), kl_cost.to(device), kl_div.to(device)

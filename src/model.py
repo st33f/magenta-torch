@@ -300,7 +300,7 @@ class Fixed_sigma_MusicGRUVAE(nn.Module):
         super(Fixed_sigma_MusicGRUVAE, self).__init__()
         self.input_size = decoder_input_size
         self.max_sequence_length = max_sequence_length
-        self.encoder = BiGRUEncoder(encoder_input_size,
+        self.encoder = BiGRU_fixed_sigma_Encoder(encoder_input_size,
                                     encoder_hidden_size,
                                     latent_dim,
                                     encoder_num_layers)

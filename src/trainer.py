@@ -1,5 +1,5 @@
 from src.checkpoint import Checkpoint
-from src.loss import ELBO, custom_ELBO
+from src.loss import ELBO, custom_ELBO, flat_ELBO
 from src.plot import plot_pred_and_target
 
 import torch
@@ -106,26 +106,41 @@ class Trainer:
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+
+        # Old ELBO's
         #elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
+        # newer ELBO
         r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight*kl_cost
-        print(f"Scores for batch: {step}")
-        print(f"R_loss: {r_loss}")
-        print(f"Elbo: {elbo}")
-        print(f"KL weight: {kl_weight}")
-        print(f"Hamming distance: {ham_dist}")
-        print(f"Batch mean KL Div: {kl_div.mean()}")
+
+        # print(f"Scores for batch: {step}")
+        # print(f"R_loss: {r_loss}")
+        # print(f"Elbo: {elbo}")
+        # print(f"KL weight: {kl_weight}")
+        # print(f"Hamming distance: {ham_dist}")
+        # print(f"Batch mean KL Div: {kl_div.mean()}")
+
         wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
-        # print()
+        print()
+        print(sigma)
         #return kl_weight*elbo, kl
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return elbo, kl_div.mean(), r_loss, acc, ham_dist
-        
+
+    def computer_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
+        batch.to(device)
+        pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+        r_loss, kl_cost, kl_div = flat_ELBO(pred, batch)
+        kl_weight = self.KL_annealing(step, 0, 0.2)
+        elbo = r_loss + kl_weight * kl_cost
+        return elbo, r_loss, kl_div
+
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
-        elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
+        #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div = self.computer_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
@@ -134,12 +149,13 @@ class Trainer:
 
         # send batch loss data to wandb
         wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl,
-                   "LR": self.scheduler.get_last_lr(), "Hamming Dist": ham_dist})
+                    "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
+
 
         # log additional metrics
-        wandb.log({ "training R_loss": r_loss, "Training Accuracy": acc})
+        wandb.log({ "training R_loss": r_loss })#, "Training Accuracy": acc})
 
-        return elbo.item(), kl.item()
+        return elbo.item(), kl_div.item()
         
     def train_epochs(self, model, start_epoch, iter, end_epoch, train_data, val_data=None):
         train_loss, train_kl = [], []
