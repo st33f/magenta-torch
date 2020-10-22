@@ -64,6 +64,7 @@ data: # Specify paths to data
     danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
     filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
 
+
 das-data:
     train_data: '/var/scratch/swa420/data/no_silent_note/X_train.pickle'
     val_data: '/var/scratch/swa420/data/no_silent_note/X_test.pickle'
