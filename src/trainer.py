@@ -148,7 +148,7 @@ class Trainer:
         #print(f"elbo train batch: {elbo}")
 
         # send batch loss data to wandb
-        wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl_div,
+        wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl_div.item(),
                     "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
 
 
