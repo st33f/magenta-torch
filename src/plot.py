@@ -505,7 +505,7 @@ first_half = pr.Multitrack(tracks=[numpy_midi, np2], beat_resolution=4)
 true_track = pr.Track(data_padded[30:158, :])
 
 
-def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=True):
+def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
     if include_silent_note:
         npad = ((0, 0), (49, 19))
     else:

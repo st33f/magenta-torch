@@ -110,7 +110,8 @@ class Trainer:
         # Old ELBO's
         #elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
         # newer ELBO
-        r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
+        #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
+        r_loss, kl_cost, kl_div = flat_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight*kl_cost
 
@@ -121,14 +122,14 @@ class Trainer:
         # print(f"Hamming distance: {ham_dist}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
 
-        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
+        # wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
         print()
         print(sigma)
         #return kl_weight*elbo, kl
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return elbo, kl_div.mean(), r_loss, acc, ham_dist
 
-    def computer_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
+    def compute_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
@@ -141,7 +142,7 @@ class Trainer:
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
         #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div = self.computer_flat_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
@@ -235,14 +236,14 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)
+                                elbo, kl, r_loss = self.compute_flat_loss(iter, model, data, False, da)
                             else:
-                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da=None)
+                                elbo, kl, r_loss  = self.compute_flat_loss(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(r_loss)
-                            batch_acc.append(acc)
-                            batch_ham_dist.append(ham_dist)
+                            #batch_acc.append(acc)
+                            #batch_ham_dist.append(ham_dist)
                             # tqdm
                             #t.set_postfix(loss=f"Elbo: {elbo}")
                             t.update()
@@ -255,23 +256,24 @@ class Trainer:
                                     self.plot_last_batch(model, data, use_teacher_forcing=False, da=None)
 
                         # get avg values for validation dataset
-                        val_elbo.append(torch.mean(torch.tensor(batch_loss)))
-                        val_kl.append(torch.mean(torch.tensor(batch_kl)))
-                        val_r_loss.append(torch.mean(torch.tensor(batch_r_loss)))
-                        val_acc.append(torch.mean(torch.tensor(batch_acc)))
-                        val_ham_dist.append(torch.mean(torch.tensor(batch_ham_dist)))
+                        #val_elbo.append(torch.mean(torch.tensor(batch_loss)))
+                        #val_kl.append(torch.mean(torch.tensor(batch_kl)))
+                        #val_r_loss.append(torch.mean(torch.tensor(batch_r_loss)))
+                        #val_acc.append(torch.mean(torch.tensor(batch_acc)))
+                        #val_ham_dist.append(torch.mean(torch.tensor(batch_ham_dist)))
 
 
-                    val_elbo_avg = torch.mean(torch.tensor(val_elbo))
-                    div = torch.mean(torch.tensor(val_kl))
-                    eval_r_loss = torch.mean(torch.tensor(val_r_loss))
-                    eval_acc = torch.mean(torch.tensor(val_acc))
-                    eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
+                    #val_elbo_avg = torch.mean(torch.tensor(val_elbo))
+                    #div = torch.mean(torch.tensor(val_kl))
+                    #eval_r_loss = torch.mean(torch.tensor(val_r_loss))
+                    #eval_acc = torch.mean(torch.tensor(val_acc))
+                    #eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
                     print('----------Validation')
-                    print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
+                    print(batch_r_loss)
+                    #print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
                     # send batch loss data to wandb
-                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
-                    wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
+                    #wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
+                    #wandb.log({"Epoch": epoch, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
 
 
 
@@ -279,8 +281,8 @@ class Trainer:
         print(train_loss)
         print(train_kl)
         print()
-        print(val_elbo)
-        print(val_kl)
+        #print(val_elbo)
+        #print(val_kl)
 
         # send batch loss data to wandb
         #wandb.log({"Final training ELBOs": train_loss, "final train KL": train_kl, "Final val ELBOs": val_loss, "Final val KL": val_kl})

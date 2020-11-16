@@ -43,8 +43,8 @@ model:
     num_subsequences: 16
     max_sequence_length: *T
     sequence_length: 16
-    encoder_input_size: 60
-    decoder_input_size: 60
+    encoder_input_size: 61
+    decoder_input_size: 61
     encoder_hidden_size: 2048
     decoder_hidden_size: 1024
     latent_dim: 512
@@ -66,14 +66,14 @@ data: # Specify paths to data
 
 
 das-data:
-    train_data: '/var/scratch/swa420/data/no_silent_note/X_train.pickle'
-    val_data: '/var/scratch/swa420/data/no_silent_note/X_test.pickle'
-    train_instrument_data: '/var/scratch/swa420/data/no_silent_note/I_train.pickle'
-    val_instrument_data: '/var/scratch/swa420/data/no_silent_note/I_test.pickle'
-    train_tempo_data: '/var/scratch/swa420/data/no_silent_note/T_train.pickle'
-    val_tempo_data: '/var/scratch/swa420/data/no_silent_note/T_test.pickle'
-    train_song_paths: '/var/scratch/swa420/data/no_silent_note/train_paths.pickle'
-    val_song_paths: '/var/scratch/swa420/data/no_silent_note/test_paths.pickle'
+    train_data: '/var/scratch/swa420/data/happy_birthday/X_train.pickle'
+    val_data: '/var/scratch/swa420/data/happy_birthday/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data/happy_birthday/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data/happy_birthday/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data/happy_birthday/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data/happy_birthday/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data/happy_birthday/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data/happy_birthday/test_paths.pickle'
     danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
     filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle'
 
