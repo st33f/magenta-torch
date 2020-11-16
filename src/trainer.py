@@ -135,13 +135,16 @@ class Trainer:
         r_loss, kl_cost, kl_div = flat_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight * kl_cost
-        return elbo, r_loss, kl_div
+
+        acc = 0
+        ham_dist = 0
+        return elbo, r_loss, kl_div, acc, ham_dist
 
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
         #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
@@ -151,7 +154,6 @@ class Trainer:
         # send batch loss data to wandb
         wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl_div.cpu(),
                     "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
-
 
         # log additional metrics
         wandb.log({ "training R_loss": r_loss })#, "Training Accuracy": acc})
