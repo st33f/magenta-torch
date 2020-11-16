@@ -74,7 +74,7 @@ class Trainer:
         return end + (start - end)*(self.KL_rate)**step
 
 
-    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=10, is_eval=True):
+    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=1, is_eval=True):
         model.eval()
         #pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
@@ -136,8 +136,8 @@ class Trainer:
         kl_weight = self.KL_annealing(step, 0, 0.2)
         elbo = r_loss + kl_weight * kl_cost
 
-        acc = 0
-        ham_dist = 0
+        acc = 0.
+        ham_dist = 0.
         return elbo, r_loss, kl_div, acc, ham_dist
 
     def train_batch(self, iter, model, batch, da=None):
@@ -242,7 +242,7 @@ class Trainer:
                                 elbo, kl, r_loss, acc, ham_dist = self.compute_flat_loss(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
-                            batch_r_loss.append(r_loss)
+                            batch_r_loss.append(torch.mean(r_loss))
                             batch_acc.append(acc)
                             batch_ham_dist.append(ham_dist)
                             # tqdm
@@ -255,6 +255,14 @@ class Trainer:
                                     self.plot_last_batch(model, data, use_teacher_forcing=False, da=da)
                                 else:
                                     self.plot_last_batch(model, data, use_teacher_forcing=False, da=None)
+
+                        print("Batch R loss")
+                        print(batch_r_loss)
+                        print("batch ELBO")
+                        print(batch_elbo)
+                        print(batch_loss)
+                        print(batch_kl)
+                        print(batch_acc)
 
                         # get avg values for validation dataset
                         val_elbo.append(torch.mean(torch.tensor(batch_loss)))
