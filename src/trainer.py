@@ -128,7 +128,7 @@ class Trainer:
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return elbo, kl_div.mean(), r_loss, acc, ham_dist
 
-    def computer_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
+    def compute_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
@@ -141,7 +141,7 @@ class Trainer:
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
         #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div = self.computer_flat_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
@@ -235,9 +235,9 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)
+                                elbo, kl, r_loss, acc, ham_dist = self.compute_flat_loss(iter, model, data, False, da)
                             else:
-                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da=None)
+                                elbo, kl, r_loss, acc, ham_dist = self.compute_flat_loss(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(r_loss)

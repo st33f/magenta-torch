@@ -7,6 +7,8 @@ import pickle
 import math
 from sklearn.model_selection import train_test_split
 import time
+import matplotlib.pyplot as plt
+from pretty_midi import note_number_to_name
 
 t = str(int(round(time.time())))
 
@@ -115,6 +117,51 @@ class MidiPreprocessor:
         # print(clean_D.shape)
         return clean_X, clean_Y, clean_V, clean_D, len(to_drop)
 
+    def plot_dataset_metrics(self, data):
+        note_counts = np.zeros(data[0][0].shape[-1])
+        silent_lengths = np.zeros(data[0][0].shape[0])
+
+        for song in data:
+            for example in song:
+                example_sum = np.sum(example, axis=0)
+                note_counts += example_sum
+                c = 0
+                for i in example[:, -1]:
+                    if i == 1:
+                        c += 1
+                    else:
+                        if c != 0:
+                            silent_lengths[c - 1] += 1
+                            c = 0
+
+        note_counts = note_counts / sum(note_counts) * 100
+
+        fig, ax = plt.subplots()
+        fig.set_size_inches(18.5, 10.5)
+        # freq, bins = np.histogram(note_counts, bins=data[0][0].shape[-1])
+        ax.bar(range(61), note_counts)
+        ax.set_xticks(np.arange(0, 61))
+        title = "x"
+        ax.set_title(f"Note frequencies for dataset: {self.pickle_store_folder.split('/')[0]}")
+        ax.set_xticklabels([note_number_to_name(i) for i in range(48, 109)], fontdict={"fontsize": 10})
+        # ax.set_xticklabels(["C{}".format(i - 2) for i in range(11)])
+
+        fname = self.pickle_store_folder + '/note-freqs.png'
+        plt.savefig(fname)
+        # plt.show()
+        plt.close()
+
+        fig, ax = plt.subplots()
+        fig.set_size_inches(18.5, 10.5)
+        # freq, bins = np.histogram(note_counts, bins=data[0][0].shape[-1])
+        ax.bar(range(128), silent_lengths[:128])
+        ax.set_xticks(np.arange(1, 129))
+        ax.set_title('Consecutive silence in ticks')
+        fname = self.pickle_store_folder + '/silence.png'
+        plt.savefig(fname)
+        # plt.show()
+
+
 
     def load_rolls(self, path, name, save_preprocessed_midi):
 
@@ -176,7 +223,10 @@ class MidiPreprocessor:
         for piano_roll in piano_rolls:
             number_of_notes.append(np.count_nonzero(piano_roll))
         permutation = np.argsort(number_of_notes)[::-1]
+        print(number_of_notes)
+
         mid.instruments = [mid.instruments[i] for i in permutation]
+
 
         quarter_note_length = 1. / (tempo/60.)
         #fs is is the frequency for the song at what rate notes are picked
@@ -209,6 +259,7 @@ class MidiPreprocessor:
             # on the same pitch for the same instrument
             note_to_duration_dict = dict()
 
+            # this part is basically quantization
             for note in instrument.notes:
                 note_tick_start = note.start * fs
                 note_tick_end = note.end * fs
@@ -231,6 +282,10 @@ class MidiPreprocessor:
 
             velocity_roll = np.zeros((total_ticks, max_concurrent_notes))
             held_note_roll = np.zeros((total_ticks, max_concurrent_notes))
+
+            print(f"len piano_roll: {len(piano_roll)}")
+            print(piano_roll.shape)
+            print(piano_roll)
 
             for step, note_vector in enumerate(piano_roll):
                 pitches = list(note_vector.nonzero()[0])
@@ -302,7 +357,7 @@ class MidiPreprocessor:
                     if len(chosen_piano_rolls) < self.max_voices:
                         chosen_piano_rolls.append(monophonic_piano_roll)
                         chosen_velocity_rolls.append(velocity_roll)
-                        chosen_held_note_rolls.append()
+                        chosen_held_note_rolls.append(held_note_roll)
                         chosen_programs.append(program)
                         if monophonic_piano_roll.shape[0] > max_song_length:
                             max_song_length = monophonic_piano_roll.shape[0]
@@ -611,6 +666,7 @@ class MidiPreprocessor:
             pickle.dump(train_paths,open(self.pickle_store_folder+'/train_paths.pickle', 'wb'))
             pickle.dump(test_paths,open(self.pickle_store_folder+'/test_paths.pickle', 'wb'))
 
+        self.plot_dataset_metrics(X_train)
         return data
 
 
