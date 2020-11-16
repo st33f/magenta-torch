@@ -1,10 +1,11 @@
 from src.checkpoint import Checkpoint
-from src.loss import ELBO, custom_ELBO, flat_ELBO
+from src.loss import ELBO, custom_ELBO, flat_ELBO, only_r_loss
 from src.plot import plot_pred_and_target
 
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
+from torch.autograd import Variable
 
 from math import exp
 import numpy as np
@@ -138,27 +139,50 @@ class Trainer:
 
         acc = 0.
         ham_dist = 0.
+        wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
+                   "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return elbo, r_loss, kl_div, acc, ham_dist
+
+    def r_loss_only(self, step, model, batch, use_teacher_forcing=True, da=None):
+        batch.to(device)
+        pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+
+        r_loss = only_r_loss(pred, batch, mu, sigma, self.free_bits)
+        loss = Variable(r_loss, requires_grad=True)
+        acc = 0.
+        ham_dist = 0.
+        kl_div = 0.
+        wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
+                   "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
+        return loss, r_loss, kl_div, acc, ham_dist
 
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
         #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
+        #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
         self.scheduler.step()
         #print(f"elbo train batch: {elbo}")
 
-        # send batch loss data to wandb
-        wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl_div.cpu(),
+        # send batch loss data to wandb - regular loss functions
+        if kl_div != 0:
+            wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl_div.cpu(),
                     "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
+        else:
+            # send batch loss data to wandb - r_loss only loss function
+            wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(), "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
         wandb.log({ "training R_loss": r_loss })#, "Training Accuracy": acc})
 
-        return elbo.item(), torch.mean(kl_div)
+        if kl_div != 0:
+            return elbo.item(), torch.mean(kl_div)
+        else:
+            return elbo.item(), 0.
         
     def train_epochs(self, model, start_epoch, iter, end_epoch, train_data, val_data=None):
         train_loss, train_kl = [], []

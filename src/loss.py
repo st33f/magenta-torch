@@ -116,3 +116,21 @@ def flat_ELBO(pred, target, mu, sigma, free_bits):
     kl_cost = torch.max(torch.mean(kl_div) - free_bits, torch.tensor([0], dtype=torch.float, device=device))
 
     return r_loss.to(device), kl_cost.to(device), kl_div.to(device)
+
+
+def only_r_loss(pred, target, mu, sigma, free_bits):
+    # create flat prediction - get indexes
+    flat_pred = torch.argmax(pred, dim=2)
+    flat_target = torch.argmax(target, dim=2)
+
+    print("FLAT PRED")
+    print(flat_pred.shape)
+    print(flat_pred)
+    print()
+    print("FLAT TARGET")
+    print(flat_target.shape)
+    print(flat_target)
+
+    r_loss = mse_loss(flat_pred.float(), flat_target.float(), reduction="sum")
+
+    return r_loss.to(device)

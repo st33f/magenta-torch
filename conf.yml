@@ -53,14 +53,14 @@ model:
     use_danceability: *DA
 
 data: # Specify paths to data
-    train_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/X_train.pickle'
-    val_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/X_test.pickle'
-    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/I_train.pickle'
-    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/I_test.pickle'
-    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/T_train.pickle'
-    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/T_test.pickle'
-    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/train_paths.pickle'
-    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/pickle_data/new_preprocess_test_32/test_paths.pickle'
+    train_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/X_train.pickle'
+    val_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/X_test.pickle'
+    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/I_train.pickle'
+    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/I_test.pickle'
+    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/T_train.pickle'
+    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/T_test.pickle'
+    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/train_paths.pickle'
+    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/test_paths.pickle'
     danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
     filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
 
