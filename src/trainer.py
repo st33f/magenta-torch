@@ -263,7 +263,6 @@ class Trainer:
                         val_acc.append(torch.mean(torch.tensor(batch_acc)))
                         val_ham_dist.append(torch.mean(torch.tensor(batch_ham_dist)))
 
-
                     val_elbo_avg = torch.mean(torch.tensor(val_elbo))
                     div = torch.mean(torch.tensor(val_kl))
                     eval_r_loss = torch.mean(torch.tensor(val_r_loss))
