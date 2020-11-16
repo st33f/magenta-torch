@@ -123,8 +123,10 @@ class MidiPreprocessor:
 
         for song in data:
             for example in song:
+                # count note frequencies
                 example_sum = np.sum(example, axis=0)
                 note_counts += example_sum
+                # count the silence
                 c = 0
                 for i in example[:, -1]:
                     if i == 1:
@@ -160,6 +162,7 @@ class MidiPreprocessor:
         fname = self.pickle_store_folder + '/silence.png'
         plt.savefig(fname)
         # plt.show()
+        plt.close()
 
 
 
