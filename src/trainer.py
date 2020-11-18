@@ -109,11 +109,11 @@ class Trainer:
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
         # Old ELBO's
-        #elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
+        elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
         # newer ELBO
-        r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
+        #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
-        elbo = r_loss + kl_weight*kl_cost
+        #elbo = r_loss + kl_weight*kl_cost
 
         # print(f"Scores for batch: {step}")
         # print(f"R_loss: {r_loss}")
@@ -127,7 +127,10 @@ class Trainer:
         # print(sigma)
         #return kl_weight*elbo, kl
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
-        return elbo, kl_div.mean(), r_loss, acc, ham_dist
+        acc = 0.
+        ham_dist = 0.
+        r_loss = 0.
+        return elbo, kl.mean(), r_loss, acc, ham_dist
 
     def compute_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
@@ -173,9 +176,9 @@ class Trainer:
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
-        #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, kl_div, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
+        #elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.new_ELBO_loss(iter, model, batch, use_teacher_forcing, da)
 
 
@@ -278,9 +281,9 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da)
+                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)
                             else:
-                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da=None)
+                                elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(r_loss)
