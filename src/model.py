@@ -335,6 +335,8 @@ class Fixed_sigma_MusicGRUVAE(nn.Module):
 
         #### This is for printing Z
         torch.set_printoptions(profile="full")
+        print("Print sigma ---------")
+        print(sigma)
         #print("Printing Z....")
         #print(z.size())
         #print(z)
