@@ -1,5 +1,5 @@
 from src.checkpoint import Checkpoint
-from src.loss import ELBO, custom_ELBO, flat_ELBO, only_r_loss
+from src.loss import ELBO, custom_ELBO, flat_ELBO, only_r_loss, new_ELBO_loss
 from src.plot import plot_pred_and_target
 
 import torch
@@ -156,12 +156,29 @@ class Trainer:
                    "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return loss, r_loss, kl_div, acc, ham_dist
 
+
+    def new_ELBO_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
+        batch.to(device)
+        pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+
+        ELBO, kl_div = new_ELBO_loss(pred, batch, mu, sigma, self.free_bits)
+        loss = Variable(ELBO, requires_grad=True)
+        acc = 0.
+        ham_dist = 0.
+        # kl_div = 0.
+        wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
+                   "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
+        return loss, ELBO, kl_div, acc, ham_dist
+
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
         #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
+        #elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div, acc, ham_dist = self.new_ELBO_loss(iter, model, batch, use_teacher_forcing, da)
+
+
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
         self.optimizer.step()
@@ -261,9 +278,9 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da)
+                                elbo, kl, r_loss, acc, ham_dist = self.new_ELBO_loss(iter, model, data, False, da)
                             else:
-                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da=None)
+                                elbo, kl, r_loss, acc, ham_dist = self.new_ELBO_loss(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(r_loss)
