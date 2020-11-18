@@ -251,9 +251,9 @@ class Trainer:
                     # plot the pred and targets as pianoroll
                     if iter%self.plot_every == 0:
                         if use_da:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=2, is_eval=False)
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
                         else:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=2, is_eval=False)
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")
