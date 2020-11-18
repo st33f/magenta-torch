@@ -22,7 +22,7 @@ preprocessor:
     test_fraction: 0.2
     
 trainer:
-    learning_rate: 0.000001 #0.001
+    learning_rate: 0.05 #0.001
     KL_rate: 0.9999
     free_bits: 256
     sampling_rate: 2000

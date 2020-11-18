@@ -86,19 +86,19 @@ class Trainer:
             pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
             batch = batch.detach().cpu()
             print("PLOTTING ------")
-            print(f"pred: {pred.size()}")
-            print(pred)
+            # print(f"pred: {pred.size()}")
+            # print(pred)
             batch_size = list(pred.size())[1]
             pred_viz = pred.detach().cpu()
             pred_max = torch.argmax(pred_viz, dim=2)
-            print(f"pred max {pred_max.size()}")
-            print(pred_max)
+            # print(f"pred max {pred_max.size()}")
+            # print(pred_max)
             flat_pred = torch.zeros(pred_viz.size(), device='cpu')
             for i in range(256):
                 for j in range(batch_size):
                     # print(argmax[i])
                     flat_pred[i, j, pred_max[i, j]] = 1
-            print(f"flat-pred: {flat_pred}")
+            # print(f"flat-pred: {flat_pred}")
             for example in range(num_plots):
                 plot_pred_and_target(flat_pred[:,example,:].detach().numpy(),
                                      batch[:,example,:].detach().numpy(), is_eval)
@@ -123,8 +123,8 @@ class Trainer:
         # print(f"Batch mean KL Div: {kl_div.mean()}")
 
         wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
-        print()
-        print(sigma)
+        # print()
+        # print(sigma)
         #return kl_weight*elbo, kl
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return elbo, kl_div.mean(), r_loss, acc, ham_dist
@@ -261,9 +261,9 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl, r_loss, acc, ham_dist = self.compute_flat_loss(iter, model, data, False, da)
+                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da)
                             else:
-                                elbo, kl, r_loss, acc, ham_dist = self.compute_flat_loss(iter, model, data, False, da=None)
+                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(torch.mean(r_loss))
