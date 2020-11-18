@@ -83,6 +83,7 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
         val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader
 
+
     # the real loader
     if train_data != '':
         X_train = pickle.load(open(train_data, 'rb'))
