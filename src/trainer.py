@@ -197,7 +197,7 @@ class Trainer:
             wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(), "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
-        wandb.log({ "training R_loss": r_loss })#, "Training Accuracy": acc})
+        wandb.log({ "training R_loss": r_loss.cpu() })#, "Training Accuracy": acc})
 
         if kl_div != 0:
             return elbo.item(), torch.mean(kl_div)
