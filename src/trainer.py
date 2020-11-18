@@ -109,11 +109,11 @@ class Trainer:
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
         # Old ELBO's
-        elbo, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
+        r_loss, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
         # newer ELBO
         #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
-        #elbo = r_loss + kl_weight*kl_cost
+        elbo = r_loss + kl_weight*kl
 
         # print(f"Scores for batch: {step}")
         # print(f"R_loss: {r_loss}")
@@ -129,7 +129,7 @@ class Trainer:
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         acc = 0.
         ham_dist = 0.
-        r_loss = 0.
+        # r_loss = 0.
         return elbo, kl.mean(), r_loss, acc, ham_dist
 
     def compute_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
