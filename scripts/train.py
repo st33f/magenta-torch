@@ -74,11 +74,11 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
 
     # for testing purposes
     if use_fake_data:
-        X_train = generate_fake_songs(32, 10)
+        X_train = generate_fake_songs(2, 10)
         train_data = MidiDataset(X_train, song_paths=song_paths)
         train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
-        X_val = generate_fake_songs(32, 4)
+        X_val = generate_fake_songs(2, 4)
         val_data = MidiDataset(X_val, song_paths=song_paths)
         val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader
