@@ -409,7 +409,7 @@ class BiGRU_fixed_sigma_Encoder(nn.Module):
             wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
             mu = self.mu(h_n)
             # sigma = self.softplus(self.sigma(h_n))
-            sigma = 1
+            sigma = torch.tensor([1], dtype=torch.float, device=device)
             # torch.set_printoptions(profile="full")
             # print(h_n)
             # print(sigma)
