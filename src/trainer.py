@@ -175,8 +175,8 @@ class Trainer:
         use_teacher_forcing = self.inverse_sigmoid(iter)
         #elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
-        #elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
-        elbo, r_loss, kl_div, acc, ham_dist = self.new_ELBO_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
+        #elbo, r_loss, kl_div, acc, ham_dist = self.new_ELBO_loss(iter, model, batch, use_teacher_forcing, da)
 
 
         #print(f"elbo train batch: {elbo}")
@@ -278,9 +278,9 @@ class Trainer:
                             data = data.transpose(0, 1).squeeze()
                             if use_da:
                                 da = da.to(device)
-                                elbo, kl, r_loss, acc, ham_dist = self.new_ELBO_loss(iter, model, data, False, da)
+                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da)
                             else:
-                                elbo, kl, r_loss, acc, ham_dist = self.new_ELBO_loss(iter, model, data, False, da=None)
+                                elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(r_loss)

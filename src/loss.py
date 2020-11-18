@@ -131,8 +131,8 @@ def only_r_loss(pred, target, mu, sigma, free_bits):
     # print(flat_target.shape)
     # print(flat_target)
 
-    r_loss = binary_cross_entropy(pred, target, reduction='sum')
-    #r_loss = mse_loss(flat_pred.float(), flat_target.float(), reduction="mean")
+    #r_loss = binary_cross_entropy(pred, target, reduction='sum')
+    r_loss = mse_loss(flat_pred.float(), flat_target.float(), reduction="sum")
     #r_loss = cross_entropy(flat_pred, flat_target, reduction='sum')
 
     return r_loss.to(device)
