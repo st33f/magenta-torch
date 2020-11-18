@@ -151,12 +151,17 @@ def new_ELBO_loss(y, t, mu, log_var, free_bits):
     sigma = torch.exp(log_var * 2)
     n_mu = torch.Tensor([0])
     n_sigma = torch.Tensor([1])
+
     if device == 'cuda':
-        n_mu = n_mu.cuda()
-        n_sigma = n_sigma.cuda()
+        n_mu = n_mu.to(device)
+        n_sigma = n_sigma.to(device)
+        mu.to(device)
+        sigma.to(device)
 
     p = Normal(n_mu, n_sigma)
     q = Normal(mu, sigma)
+
+
 
     # The method signature is P and Q, but might need to be reversed to calculate divergence of Q with respect to P
     kl_div = kl_divergence(q, p)
