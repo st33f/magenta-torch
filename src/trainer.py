@@ -266,7 +266,7 @@ class Trainer:
                                 elbo, kl, r_loss, acc, ham_dist = self.r_loss_only(iter, model, data, False, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
-                            batch_r_loss.append(torch.mean(r_loss))
+                            batch_r_loss.append(r_loss)
                             batch_acc.append(acc)
                             batch_ham_dist.append(ham_dist)
                             # tqdm
