@@ -152,11 +152,11 @@ def new_ELBO_loss(y, t, mu, log_var, free_bits):
     n_mu = torch.Tensor([0])
     n_sigma = torch.Tensor([1])
 
-    if device == 'cuda':
-        n_mu = n_mu.to(device)
-        n_sigma = n_sigma.to(device)
-        mu.to(device)
-        sigma.to(device)
+
+    n_mu = n_mu.to(device)
+    n_sigma = n_sigma.to(device)
+    mu.to(device)
+    sigma.to(device)
 
     p = Normal(n_mu, n_sigma)
     q = Normal(mu, sigma)
@@ -177,4 +177,4 @@ def new_ELBO_loss(y, t, mu, log_var, free_bits):
 
     # notice minus sign as we want to maximise ELBO
     #return -ELBO, kl_div.mean(), weight * kl_div.mean()  # mean instead of sum
-    return -ELBO, kl_div.mean()
+    return -ELBO.to(device), kl_div.mean()
