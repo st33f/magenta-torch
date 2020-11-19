@@ -14,7 +14,7 @@ def hamming_distance(s1, s2) -> int:
         raise ValueError("Undefined for sequences of unequal length.")
     return sum(el1 != el2 for el1, el2 in zip(s1, s2))
 
-def ELBO(pred, target, mu, sigma, free_bits):
+def ELBO(pred, target, mu, log_var, free_bits):
     """
     Evidence Lower Bound
     Return KL Divergence and KL Regularization using free bits
@@ -29,6 +29,10 @@ def ELBO(pred, target, mu, sigma, free_bits):
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
     mu_prior = torch.tensor([0], dtype=torch.float, device=device)
+
+    # add the square to sigma
+    sigma = torch.exp(log_var*2)
+
     p = Normal(mu_prior, sigma_prior)
     q = Normal(mu, sigma)
     kl_div = kl_divergence(q, p)
