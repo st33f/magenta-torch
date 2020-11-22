@@ -85,7 +85,7 @@ class MidiPreprocessor:
 
 
     def drop_empty_seqs(self, X, Y, V, D, silent_threshold=8):
-        print(X.shape)
+        # print(X.shape)
         # print(Y.shape)
         # print(V.shape)
         # print(D.shape)
@@ -104,14 +104,14 @@ class MidiPreprocessor:
                 # if tick[-1] == 1:
                 #     print(tick)
 
-        print(to_drop)
+        # print(to_drop)
         clean_X = np.delete(X, to_drop, axis=0)
 
         clean_Y = np.delete(Y, to_drop, axis=0)
         clean_V = np.delete(V, to_drop, axis=0)
         clean_D = np.delete(D, to_drop, axis=0)
 
-        print(clean_X.shape)
+        # print(clean_X.shape)
         # print(clean_Y.shape)
         # print(clean_V.shape)
         # print(clean_D.shape)
@@ -226,7 +226,7 @@ class MidiPreprocessor:
         for piano_roll in piano_rolls:
             number_of_notes.append(np.count_nonzero(piano_roll))
         permutation = np.argsort(number_of_notes)[::-1]
-        print(number_of_notes)
+        # print(permutation)
 
         mid.instruments = [mid.instruments[i] for i in permutation]
 
@@ -286,9 +286,9 @@ class MidiPreprocessor:
             velocity_roll = np.zeros((total_ticks, max_concurrent_notes))
             held_note_roll = np.zeros((total_ticks, max_concurrent_notes))
 
-            print(f"len piano_roll: {len(piano_roll)}")
-            print(piano_roll.shape)
-            print(piano_roll)
+            # print(f"len piano_roll: {len(piano_roll)}")
+            # print(piano_roll.shape)
+            # print(piano_roll)
 
             for step, note_vector in enumerate(piano_roll):
                 pitches = list(note_vector.nonzero()[0])
@@ -383,6 +383,10 @@ class MidiPreprocessor:
                         #append them to the chosen ones
                         if len(chosen_piano_rolls) < self.max_voices:
                             chosen_piano_rolls.append(monophonic_piano_roll)
+                            print("monophonic PR")
+                            print(monophonic_piano_roll.shape)
+                            print(sum(monophonic_piano_roll[0,:]))
+
                             chosen_velocity_rolls.append(velocity_roll[:, voice])
                             chosen_held_note_rolls.append(held_note_roll[:, voice])
                             chosen_programs.append(program)
@@ -396,6 +400,12 @@ class MidiPreprocessor:
         assert(len(chosen_piano_rolls) == len(chosen_velocity_rolls))
         assert(len(chosen_piano_rolls) == len(chosen_held_note_rolls))
         assert(len(chosen_piano_rolls) == len(chosen_programs))
+
+        print("Held notes ----")
+        # print(held_note_rolls)
+        print(held_note_rolls[0])
+        print(held_note_rolls[0].shape)
+        print(chosen_piano_rolls[0].shape)
 
         #do the unrolling and prepare for model input
         if len(chosen_piano_rolls) > 0:

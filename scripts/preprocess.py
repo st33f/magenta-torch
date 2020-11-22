@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='conf.yml')
 parser.add_argument('--import_dir', type=str)
 parser.add_argument('--save_imported_midi_as_pickle', type=bool, default=True)
-parser.add_argument('--save_preprocessed_midi', type=bool, default=False)
+parser.add_argument('--save_preprocessed_midi', type=bool, default=True)
 
 def main(args):
     conf = None
