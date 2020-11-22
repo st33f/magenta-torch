@@ -405,7 +405,7 @@ class MidiPreprocessor:
         # print(held_note_rolls)
         print(held_note_rolls[0])
         print(held_note_rolls[0].shape)
-        print(chosen_piano_rolls[0].shape)
+        # print(chosen_piano_rolls[0].shape)
 
         #do the unrolling and prepare for model input
         if len(chosen_piano_rolls) > 0:
