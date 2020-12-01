@@ -34,7 +34,7 @@ trainer:
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/december_happy_bday'
     use_danceability: &DA False
-    use_fake_data: True
+    use_fake_data: False
     
 sampler:
     free_bits: 256
