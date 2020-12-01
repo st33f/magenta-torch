@@ -67,14 +67,14 @@ data: # Specify paths to data
 
 
 das-data:
-    train_data: '/var/scratch/swa420/data/smallest_mono/X_train.pickle'
-    val_data: '/var/scratch/swa420/data/smallest_mono/X_test.pickle'
-    train_instrument_data: '/var/scratch/swa420/data/smallest_mono/I_train.pickle'
-    val_instrument_data: '/var/scratch/swa420/data/smallest_mono/I_test.pickle'
-    train_tempo_data: '/var/scratch/swa420/data/smallest_mono/T_train.pickle'
-    val_tempo_data: '/var/scratch/swa420/data/smallest_mono/T_test.pickle'
-    train_song_paths: '/var/scratch/swa420/data/smallest_mono/train_paths.pickle'
-    val_song_paths: '/var/scratch/swa420/data/smallest_mono/test_paths.pickle'
+    train_data: '/var/scratch/swa420/data-dec/smallest/X_train.pickle'
+    val_data: '/var/scratch/swa420/data-dec/smallest/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data-dec/smallest/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data-dec/smallest/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data-dec/smallest/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data-dec/smallest/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data-dec/smallest/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data-dec/smallest/test_paths.pickle'
     danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
     filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle'
 
