@@ -124,6 +124,11 @@ def train(model, trainer, train_data, val_data, epochs, resume):
 
 
 def main(args):
+
+    torch.manual_seed(42)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
     model_params = None
     trainer_params = None
     data_params = None

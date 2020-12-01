@@ -10,6 +10,8 @@ import time
 import matplotlib.pyplot as plt
 from pretty_midi import note_number_to_name
 
+np.set_printoptions(threshold=1000)#np.inf)
+
 t = str(int(round(time.time())))
 
 class MidiPreprocessor:
@@ -42,7 +44,8 @@ class MidiPreprocessor:
                  attach_instruments=False,
                  input_length=16,
                  output_length=16,
-                 test_fraction=0.1):
+                 test_fraction=0.1,
+                 include_held_note=True):
         self.classes = classes
         self.pickle_store_folder = pickle_store_folder
         self.include_unknown = include_unknown
@@ -62,6 +65,7 @@ class MidiPreprocessor:
         self.input_length = input_length
         self.output_length = output_length
         self.test_fraction = test_fraction
+        self.include_held_note = include_held_note
         
         if include_unknown:
             self.num_classes = len(classes) + 1
@@ -84,7 +88,7 @@ class MidiPreprocessor:
             self.instrument_dim = 7
 
 
-    def drop_empty_seqs(self, X, Y, V, D, silent_threshold=8):
+    def drop_empty_seqs(self, X, Y, V, D, silent_threshold=16):
         # print(X.shape)
         # print(Y.shape)
         # print(V.shape)
@@ -93,6 +97,7 @@ class MidiPreprocessor:
         for k, section in enumerate(X):
             section_silents = 0
             # print(section.shape)
+            # print(k)
             for tick in section:
                 if tick[-1] == 1:
                     section_silents += tick[-1]
@@ -118,8 +123,12 @@ class MidiPreprocessor:
         return clean_X, clean_Y, clean_V, clean_D, len(to_drop)
 
     def plot_dataset_metrics(self, data):
+        # print(data)
         note_counts = np.zeros(data[0][0].shape[-1])
         silent_lengths = np.zeros(data[0][0].shape[0])
+
+        print(data[0].shape)
+        print(data[0].shape[2])
 
         for song in data:
             for example in song:
@@ -141,11 +150,18 @@ class MidiPreprocessor:
         fig, ax = plt.subplots()
         fig.set_size_inches(18.5, 10.5)
         # freq, bins = np.histogram(note_counts, bins=data[0][0].shape[-1])
-        ax.bar(range(61), note_counts)
-        ax.set_xticks(np.arange(0, 61))
+        ax.bar(range(data[0].shape[2]), note_counts)
+        ax.set_xticks(np.arange(0, data[0].shape[2]))
         title = "x"
         ax.set_title(f"Note frequencies for dataset: {self.pickle_store_folder.split('/')[0]}")
-        ax.set_xticklabels([note_number_to_name(i) for i in range(48, 109)], fontdict={"fontsize": 10})
+        tick_range_x_min = self.low_crop
+        tick_range_x_max = self.high_crop
+        if self.include_silent_note:
+            tick_range_x_max += 1
+        if self.include_held_note:
+            tick_range_x_max += 1
+
+        ax.set_xticklabels([note_number_to_name(i) for i in range(tick_range_x_min, tick_range_x_max)], fontdict={"fontsize": 10})
         # ax.set_xticklabels(["C{}".format(i - 2) for i in range(11)])
 
         fname = self.pickle_store_folder + '/note-freqs.png'
@@ -208,8 +224,16 @@ class MidiPreprocessor:
         else:
             tempo = tempo_change_bpm[0]
 
+        # exclude the drum tracks by redefining mid.instruments
+        mid.instruments = [i for i in mid.instruments if i.is_drum == False]
+
+
         #cut off the notes that are not in the longest part where the tempo is steady
         for instrument in mid.instruments:
+            # exclude drum tracks
+            if instrument.is_drum == True:
+                print("We have a drum track")
+                continue
             new_notes = [] #list for the notes that survive the cutting
             for note in instrument.notes:
                 #check if it is in the given range of the longest part where the tempo is steady
@@ -222,7 +246,7 @@ class MidiPreprocessor:
 
         #(descending) order the piano_rolls according to the number of notes per track
         number_of_notes = []
-        piano_rolls = [i.get_piano_roll(fs=100) for i in mid.instruments]
+        piano_rolls = [i.get_piano_roll(fs=100) for i in mid.instruments if i.is_drum is False]
         for piano_roll in piano_rolls:
             number_of_notes.append(np.count_nonzero(piano_roll))
         permutation = np.argsort(number_of_notes)[::-1]
@@ -248,17 +272,19 @@ class MidiPreprocessor:
         for instrument in mid.instruments:
             piano_roll = np.zeros((total_ticks, 128))
 
+            pr_start_times = np.zeros((total_ticks, 128))
+
             #counts how many notes are played at maximum for this instrument at any given tick
             #this is used to determine the depth of the velocity_roll and held_note_roll
             concurrent_notes_count = np.zeros((total_ticks,))
 
             #keys is a tuple of the form (tick_start_of_the_note, pitch)
-            #this uniquely identifies a note since there can be no two notes 
+            #this uniquely identifies a note since there can be no two notes
             # playing on the same pitch for the same instrument
             note_to_velocity_dict = dict()
 
             #keys is a tuple of the form (tick_start_of_the_note, pitch)
-            #this uniquely identifies a note since there can be no two notes playing 
+            #this uniquely identifies a note since there can be no two notes playing
             # on the same pitch for the same instrument
             note_to_duration_dict = dict()
 
@@ -268,11 +294,16 @@ class MidiPreprocessor:
                 note_tick_end = note.end * fs
                 absolute_start = int(round(note_tick_start))
                 absolute_end = int(round(note_tick_end))
+                print("absolute note times ---")
+                print(absolute_start, absolute_end)
+
                 decimal = note_tick_start - absolute_start
                 #see if it starts at a tick or not
                 #if it doesn't start at a tick (decimal > 10e-3) but is longer than one tick, include it anyways
                 if decimal < 10e-3 or absolute_end-absolute_start >= 1:
                     piano_roll[absolute_start:absolute_end, note.pitch] = 1
+                    if absolute_start < total_ticks:
+                        pr_start_times[absolute_start, note.pitch] = 1
                     concurrent_notes_count[absolute_start:absolute_end] += 1
 
                     #save information of velocity and duration for later use
@@ -301,27 +332,35 @@ class MidiPreprocessor:
                         #if its not the start of a note, it means it is held
                         held_note_roll[step, voice_number] = 1
 
-            piano_rolls.append(piano_roll)
+
+
+            if self.include_held_note:
+                piano_rolls.append(pr_start_times)
+            else:
+                piano_rolls.append(piano_roll)
+            # piano_rolls.append(piano_roll)
             velocity_rolls.append(velocity_roll)
             held_note_rolls.append(held_note_roll)
+
+        # count which one hast most held notes
 
         #get the program numbers for each instrument
         #program numbers are between 0 and 127 and have a 1:1 mapping to the instruments described in settings file
         programs = [i.program for i in mid.instruments]
 
         # we may want to override the maximal_number_of_voices_per_track
-        # if the following tracks are all silent it makes no sense to exclude 
+        # if the following tracks are all silent it makes no sense to exclude
         # voices from the first instrument and then just have a song with 1 voice
-        override_max_notes_per_track_list = [self.max_voices_per_track 
+        override_max_notes_per_track_list = [self.max_voices_per_track
                                              for _ in max_concurrent_notes_per_track_list]
         silent_tracks_if_we_dont_override = self.max_voices - \
-        sum([min(self.max_voices_per_track, x) if x > 0 else 0 
+        sum([min(self.max_voices_per_track, x) if x > 0 else 0
              for x in max_concurrent_notes_per_track_list[:self.max_voices]])
 
         for voice in range(min(self.max_voices, len(max_concurrent_notes_per_track_list))):
             if silent_tracks_if_we_dont_override > 0 and \
                 max_concurrent_notes_per_track_list[voice] > self.max_voices:
-                additional_voices = min(silent_tracks_if_we_dont_override, 
+                additional_voices = min(silent_tracks_if_we_dont_override,
                                         max_concurrent_notes_per_track_list[voice] - \
                                         self.max_voices)
                 override_max_notes_per_track_list[voice] += additional_voices
@@ -336,11 +375,11 @@ class MidiPreprocessor:
         max_song_length = 0
 
         #go through all pianorolls in the descending order of the total notes they have
-        for batch in zip(piano_rolls,  
-                         velocity_rolls, 
-                         held_note_rolls, 
-                         programs, 
-                         max_concurrent_notes_per_track_list, 
+        for batch in zip(piano_rolls,
+                         velocity_rolls,
+                         held_note_rolls,
+                         programs,
+                         max_concurrent_notes_per_track_list,
                          override_max_notes_per_track_list):
             piano_roll = batch[0]
             velocity_roll = batch[1]
@@ -368,9 +407,9 @@ class MidiPreprocessor:
                         break
 
                 else:
-                    #limit the number of voices per track by the minimum of the actual 
+                    #limit the number of voices per track by the minimum of the actual
                     # concurrent voices per track or the maximal allowed in the settings file
-                    for voice in range(min(max_concurrent_notes, max(self.max_voices_per_track, 
+                    for voice in range(min(max_concurrent_notes, max(self.max_voices_per_track,
                                                                      override_max_notes_per_track))):
                         #Take the highest note for voice 0, second highest for voice 1 and so on...
                         monophonic_piano_roll = np.zeros(piano_roll.shape)
@@ -383,9 +422,9 @@ class MidiPreprocessor:
                         #append them to the chosen ones
                         if len(chosen_piano_rolls) < self.max_voices:
                             chosen_piano_rolls.append(monophonic_piano_roll)
-                            print("monophonic PR")
-                            print(monophonic_piano_roll.shape)
-                            print(sum(monophonic_piano_roll[0,:]))
+                            # print("monophonic PR")
+                            # print(monophonic_piano_roll.shape)
+                            # print(sum(monophonic_piano_roll[0,:]))
 
                             chosen_velocity_rolls.append(velocity_roll[:, voice])
                             chosen_held_note_rolls.append(held_note_roll[:, voice])
@@ -401,11 +440,17 @@ class MidiPreprocessor:
         assert(len(chosen_piano_rolls) == len(chosen_held_note_rolls))
         assert(len(chosen_piano_rolls) == len(chosen_programs))
 
-        print("Held notes ----")
-        # print(held_note_rolls)
-        print(held_note_rolls[0])
-        print(held_note_rolls[0].shape)
-        # print(chosen_piano_rolls[0].shape)
+        if len(chosen_piano_rolls) > 0:
+            print("Held notes ----")
+            print(len(chosen_held_note_rolls))
+            print(chosen_held_note_rolls[0].shape)
+            #print(chosen_held_note_rolls[0])
+
+            print("Piano rolls ----")
+            print(len(chosen_piano_rolls))
+            print(chosen_piano_rolls[0].shape)
+            # print(chosen_piano_rolls[0])
+            #print(piano_rolls[0])
 
         #do the unrolling and prepare for model input
         if len(chosen_piano_rolls) > 0:
@@ -425,6 +470,24 @@ class MidiPreprocessor:
             #cut off pitch values which are very uncommon
             #this reduces the feature space significantly
             Y = Y[:,self.low_crop:self.high_crop]
+
+            print("Y ------")
+            print(Y.shape)
+            # print(Y)
+            # Here we append now the HELD NOTES ROLLL
+            if self.include_held_note:
+                Y = np.append(Y,  np.zeros((Y.shape[0], 1)), axis=1)
+                for i, pr in enumerate(chosen_piano_rolls):
+                    for step in range(pr.shape[0]):
+                        if np.sum(Y[i + step*self.max_voices,:]) == 1:
+                            #print("note played")
+                            #print(Y[i + step * self.max_voices, :])
+                            pass
+                        else:
+                            #print("no")
+                            Y[i + step*self.max_voices, -1] += chosen_held_note_rolls[i][step]
+
+
             #append silent note if desired
             #the silent note will always be at the last note
             if self.include_silent_note:
@@ -443,7 +506,7 @@ class MidiPreprocessor:
                 for step in range(velocity_roll.shape[0]):
                     if velocity_roll[step] > 0:
                         velocity = self.velocity_threshold + \
-                        (velocity_roll[step] / self.max_velocity) * (1.0 - self.velocity_threshold) 
+                        (velocity_roll[step] / self.max_velocity) * (1.0 - self.velocity_threshold)
                         # a note is therefore at least 0.1*max_velocity loud
                         # but this is good, since we can now more clearly distinguish between silent or played notes
                         assert(velocity <= 1.0)
@@ -458,8 +521,8 @@ class MidiPreprocessor:
                 for step in range(held_note_roll.shape[0]):
                     D[i + step*self.max_voices] = held_note_roll[step]
 
-            instrument_feature_matrix = mf.programs_to_instrument_matrix(chosen_programs, 
-                                                                         self.instrument_attach_method, 
+            instrument_feature_matrix = mf.programs_to_instrument_matrix(chosen_programs,
+                                                                         self.instrument_attach_method,
                                                                          self.max_voices)
 
             if self.attach_instruments:
@@ -467,16 +530,16 @@ class MidiPreprocessor:
                 Y = np.append(Y, instrument_feature_matrix, axis=1)
             X = Y
 
-            if save_preprocessed_midi: mf.rolls_to_midi(Y, 
+            if save_preprocessed_midi: mf.rolls_to_midi(Y,
                                                         chosen_programs,
                                                         'preprocess_midi_data/' + t + '/',
-                                                        name, 
-                                                        tempo, 
+                                                        name,
+                                                        tempo,
                                                         self.low_crop,
                                                         self.high_crop,
                                                         self.num_notes,
                                                         self.velocity_threshold,
-                                                        V, 
+                                                        V,
                                                         D)
 
 
@@ -488,10 +551,11 @@ class MidiPreprocessor:
                 padding_length = self.input_length - (X.shape[0] % self.input_length)
                 if self.input_length == padding_length:
                     padding_length = 0
-                #pad to the right..
-                X = np.pad(X, ((0,padding_length),(0, 0)), 'constant', constant_values=(0, 0))
-                if self.include_silent_note:
-                    X[-padding_length:,-1] = 1
+                else:
+                    #pad to the right..
+                    X = np.pad(X, ((0,padding_length),(0, 0)), 'constant', constant_values=(0, 0))
+                    if self.include_silent_note:
+                        X[-padding_length:,-1] = 1
                 number_of_splits = X.shape[0] // self.input_length
                 X = np.split(X, number_of_splits)
                 X = np.asarray(X)
@@ -499,13 +563,16 @@ class MidiPreprocessor:
             if self.output_length > 0:
                 #split Y
                 padding_length = self.output_length - (Y.shape[0] % self.output_length)
+
                 if self.output_length == padding_length:
                     padding_length = 0
-
-                #pad to the right..
-                Y = np.pad(Y, ((0,padding_length),(0, 0)), 'constant', constant_values=(0, 0))
-                if self.include_silent_note:
-                    Y[-padding_length:,-1] = 1
+                else:
+                    print("Padding Length", padding_length)
+                    #pad to the right..
+                    Y = np.pad(Y, ((0,padding_length),(0, 0)), 'constant', constant_values=(0, 0))
+                    print(Y)
+                    if self.include_silent_note:
+                        Y[-padding_length:,-1] = 1
                 number_of_splits = Y.shape[0] // self.output_length
                 Y = np.split(Y, number_of_splits)
                 Y = np.asarray(Y)
@@ -588,6 +655,9 @@ class MidiPreprocessor:
 
                             if X is not None and Y is not None:
                                 n_input_seqs += X.shape[0]
+                                print("X-------")
+                                print(X)
+                                # print(X[0])
                                 clean_x, clean_y, clean_v, clean_d, dropped = self.drop_empty_seqs(X, Y, V, D)
                                 n_dropped += dropped
 
