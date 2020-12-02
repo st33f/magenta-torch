@@ -38,7 +38,8 @@ def ELBO(pred, target, mu, log_var, free_bits):
     kl_div = kl_divergence(q, p)
     #print(f"kl div: {kl_div}")
     print(f"mean KL div: {torch.mean(kl_div)}")
-    elbo = torch.mean(likelihood) - torch.max(torch.mean(kl_div)-free_bits, torch.tensor([0], dtype=torch.float, device=device))
+    elbo = -likelihood
+    #elbo = torch.mean(likelihood) - torch.max(torch.mean(kl_div)-free_bits, torch.tensor([0], dtype=torch.float, device=device))
     print(f"elbo: {elbo}")
     print(f"-elbo: {-elbo}")
 
