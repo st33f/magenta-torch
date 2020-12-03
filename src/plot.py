@@ -545,7 +545,9 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
     print(len(pred[0]))
     print(pred)
 
-    plt.specgram(pred)
+    pred_viz = [item for sublist in pred for item in sublist]
+
+    plt.specgram(pred_viz, NFFT=len(pred[0]))
     plt.xlabel('Time')
     plt.ylabel('Note')
 
