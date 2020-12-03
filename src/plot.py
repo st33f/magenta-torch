@@ -542,7 +542,7 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     #print(target.size())
 
     # Plot Spectorgram for pred and target
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex='col', figsize=(12, 8), dpi=80)
+    fig, ax = plt.subplots(nrows=2, ncols=1, sharex='col', sharey='row', figsize=(12, 8), dpi=80)
 
     plt.title('Spectrogram of pred')
     im = ax[0].scatter(range(256), first_target.cpu())
@@ -554,9 +554,10 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
 
     #plt.imshow(data, cmap='tab20_r', interpolation='nearest')
 
-    im = ax[1].imshow(first_pred.cpu(), cmap='hot', interpolation='nearest')
+    im = ax[1].imshow(first_pred.cpu(), cmap='viridis', interpolation='nearest')
     ax[1].invert_yaxis()
     fig.colorbar(im, ax=ax)
+    fig.clim(0, 1)
 
     #plt.show()
 
