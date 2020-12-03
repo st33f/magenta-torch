@@ -402,6 +402,7 @@ class BiGRU_fixed_sigma_Encoder(nn.Module):
 
         def forward(self, input, h0):
             batch_size = input.size(1)
+            print("----- X size layers.py ---", input.size())
             _, h_n = self.bigru(input, h0)
             h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
             print("printing h_n:.......")

@@ -74,13 +74,12 @@ class Trainer:
     def KL_annealing(self, step, start, end):
         return end + (start - end)*(self.KL_rate)**step
 
-    def get_pred_from_data(self, model, batch, use_teacher_forcing=True, da=None, is_eval=True):
+    def get_pred_from_data(self, model, batch, use_teacher_forcing=True, da=None):
         model.eval()
         with torch.no_grad():
             pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
-            plot_spectogram(pred, batch)
         model.train()
-
+        return pred
 
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=1, is_eval=True):
         model.eval()
@@ -276,7 +275,8 @@ class Trainer:
                             self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
                         else:
                             self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
-                            # plot_spectogram(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
+                            # pred_for_viz = self.get_pred_from_data(model, data, )
+                            # plot_spectogram(pred_for_viz, data)
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")

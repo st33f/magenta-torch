@@ -323,6 +323,8 @@ class Fixed_sigma_MusicGRUVAE(nn.Module):
         """
         batch_size = x.size(1)
         h_enc = self.encoder.init_hidden(batch_size)
+
+        print("----- X size model.pu ---", x.size())
         mu, sigma = self.encoder(x, h_enc)
 
         # Sample latent variable

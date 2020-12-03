@@ -532,25 +532,29 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
     #plt.show()
 
 def plot_spectogram(pred, target, num_plots=1, is_eval=False):
-
+    print("--- PLOT SPECTORGRAM ---")
+    first_target = target[:, 0, :]
+    first_pred = pred[:, 0, :]
+    print(first_target.size())
+    print(target.size())
 
     # Plot Spectorgram for pred and target
     plt.subplot(211)
     plt.title('Spectrogram of pred and target')
-    plt.plot(target)
+    plt.plot(first_target)
 
     plt.xlabel('Time')
     plt.ylabel('Note')
 
     plt.subplot(212)
 
-    print("Pred PLOT ---")
+
     # print(pred.size())
     print(len(pred))
     print(len(pred[0]))
     print(pred)
 
-    pred_viz = [item for sublist in pred for item in sublist]
+    pred_viz = [item for sublist in first_pred for item in sublist]
 
     fig = plt.specgram(pred_viz, NFFT=len(pred[0]), noverlap=0)
     plt.xlabel('Time')
