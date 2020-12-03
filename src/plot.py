@@ -536,8 +536,7 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     print("--- PLOT SPECTORGRAM ---")
     first_target = torch.argmax(target[:, 0, :], dim=1)
     first_pred = pred[:, 0, :].T
-    first_pred.cpu()
-    first_target.cpu()
+
     #print(first_pred.size())
     #print(first_pred)
     #print(target.size())
@@ -546,7 +545,7 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex='col', figsize=(12, 8), dpi=80)
 
     plt.title('Spectrogram of pred')
-    im = ax[0].scatter(range(256), first_target)
+    im = ax[0].scatter(range(256), first_target.cpu())
 
     ax[0].set_xlabel('Time')
     ax[0].set_ylabel('Note')
@@ -555,7 +554,7 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
 
     #plt.imshow(data, cmap='tab20_r', interpolation='nearest')
 
-    im = ax[1].imshow(first_pred, cmap='hot', interpolation='nearest')
+    im = ax[1].imshow(first_pred.cpu(), cmap='hot', interpolation='nearest')
     ax[1].invert_yaxis()
     fig.colorbar(im, ax=ax)
 
