@@ -529,6 +529,11 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
         wandb.log({"Training Pianorolls": fig})
     plt.close('all')
 
+    #plt.show()
+
+def plot_spectogram(pred, target, num_plots=1, is_eval=False):
+
+
     # Plot Spectorgram for pred and target
     plt.subplot(211)
     plt.title('Spectrogram of pred and target')
@@ -547,7 +552,7 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
 
     pred_viz = [item for sublist in pred for item in sublist]
 
-    fig, ax = plt.specgram(pred_viz, NFFT=len(pred[0]), noverlap=0)
+    fig = plt.specgram(pred_viz, NFFT=len(pred[0]), noverlap=0)
     plt.xlabel('Time')
     plt.ylabel('Note')
 
@@ -556,10 +561,6 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
     else:
         wandb.log({"Training Spectogram": fig})
     plt.close('all')
-
-    #plt.show()
-
-
 
 
 

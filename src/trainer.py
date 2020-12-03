@@ -1,6 +1,6 @@
 from src.checkpoint import Checkpoint
 from src.loss import ELBO, custom_ELBO, flat_ELBO, only_r_loss, new_ELBO_loss
-from src.plot import plot_pred_and_target
+from src.plot import plot_pred_and_target, plot_spectogram
 
 import torch
 import torch.optim as optim
@@ -73,6 +73,13 @@ class Trainer:
         
     def KL_annealing(self, step, start, end):
         return end + (start - end)*(self.KL_rate)**step
+
+    def get_pred_from_data(self, model, batch, use_teacher_forcing=True, da=None, is_eval=True):
+        model.eval()
+        with torch.no_grad():
+            pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+            plot_spectogram(pred, batch)
+        model.train()
 
 
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=1, is_eval=True):
@@ -269,6 +276,7 @@ class Trainer:
                             self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
                         else:
                             self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
+                            # plot_spectogram(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")
