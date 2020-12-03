@@ -238,15 +238,19 @@ class Trainer:
                     model.train()
                     # first, get data AND danceability from the dataset
                     data, da = batch
+
                     print("Data size", data.size())
                     data = data.transpose(0, 1).squeeze()
                     print("Data size", data.size())
 
                     # check if batch_dim = 1, the unsqueeze to add dim
-                    if data.size(1) == 1:
+                    if len(data.size()) < 3:
                         data = torch.unsqueeze(data, dim=1)
                     print("Data size", data.size())
                     data = data.to(device)
+                    pred_for_viz = self.get_pred_from_data(model, data)
+                    plot_spectogram(pred_for_viz, data)
+
                     if use_da:
                         da = da.to(device)
                         # pass it both to the trainer
@@ -275,8 +279,7 @@ class Trainer:
                             self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
                         else:
                             self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
-                            # pred_for_viz = self.get_pred_from_data(model, data, )
-                            # plot_spectogram(pred_for_viz, data)
+
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")

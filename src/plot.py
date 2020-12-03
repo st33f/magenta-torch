@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import torch
 import pypianoroll as pr
 from matplotlib import pyplot as plt
 from music21 import *
@@ -533,32 +534,30 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
 
 def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     print("--- PLOT SPECTORGRAM ---")
-    first_target = target[:, 0, :]
-    first_pred = pred[:, 0, :]
-    print(first_target.size())
-    print(target.size())
+    first_target = torch.argmax(target[:, 0, :], dim=1)
+    first_pred = pred[:, 0, :].T
+    #print(first_pred.size())
+    #print(first_pred)
+    #print(target.size())
 
     # Plot Spectorgram for pred and target
-    plt.subplot(211)
-    plt.title('Spectrogram of pred and target')
-    plt.plot(first_target)
+    fig, ax = plt.subplots(nrows=2, ncols=1, sharex='col', figsize=(12, 8), dpi=80)
 
-    plt.xlabel('Time')
-    plt.ylabel('Note')
+    plt.title('Spectrogram of pred')
+    im = ax[0].scatter(range(256), first_target)
 
-    plt.subplot(212)
+    ax[0].set_xlabel('Time')
+    ax[0].set_ylabel('Note')
+    ax[1].set_xlabel('Time')
+    ax[1].set_ylabel('Note')
 
+    #plt.imshow(data, cmap='tab20_r', interpolation='nearest')
 
-    # print(pred.size())
-    print(len(pred))
-    print(len(pred[0]))
-    print(pred)
+    im = ax[1].imshow(first_pred, cmap='hot', interpolation='nearest')
+    ax[1].invert_yaxis()
+    fig.colorbar(im, ax=ax)
 
-    pred_viz = [item for sublist in first_pred for item in sublist]
-
-    fig = plt.specgram(pred_viz, NFFT=len(pred[0]), noverlap=0)
-    plt.xlabel('Time')
-    plt.ylabel('Note')
+    #plt.show()
 
     if is_eval:
         wandb.log({"Eval Spectogram": fig})
