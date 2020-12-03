@@ -116,7 +116,7 @@ class Trainer:
         #elbo = r_loss + kl_weight*kl
         #elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
 
-        # THIS IFFOR NO KL VERSION
+        # THIS IS FOR "NO KL VERSION"
         elbo = r_loss
 
         # print(f"Scores for batch: {step}")
@@ -134,7 +134,8 @@ class Trainer:
         acc = 0.
         ham_dist = 0.
         # r_loss = 0.
-        return elbo, kl, r_loss, acc, ham_dist
+        # return teh mean KL
+        return elbo, torch.mean(kl), r_loss, acc, ham_dist
 
     def compute_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
