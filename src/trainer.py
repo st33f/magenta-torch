@@ -202,7 +202,7 @@ class Trainer:
             wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(), "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
-        wandb.log({ "training R_loss": r_loss.cpu() })#, "Training Accuracy": acc})
+        wandb.log({ "training R_loss": r_loss.cpu(), "Log(Training R_loss": torch.log(r_loss).cpu()})#, "Training Accuracy": acc})
 
         if kl_div != 0:
             return elbo.item(), torch.mean(kl_div)
@@ -232,7 +232,14 @@ class Trainer:
                     model.train()
                     # first, get data AND danceability from the dataset
                     data, da = batch
+                    print("Data size", data.size())
                     data = data.transpose(0, 1).squeeze()
+                    print("Data size", data.size())
+
+                    # check if batch_dim = 1, the unsqueeze to add dim
+                    if data.size(1) == 1:
+                        data = torch.unsqueeze(data, dim=1)
+                    print("Data size", data.size())
                     data = data.to(device)
                     if use_da:
                         da = da.to(device)

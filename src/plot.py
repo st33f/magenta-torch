@@ -528,6 +528,29 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
     else:
         wandb.log({"Training Pianorolls": fig})
     plt.close('all')
+
+    # Plot Spectorgram for pred and target
+    plt.subplot(211)
+    plt.title('Spectrogram of pred and target')
+    plt.plot(target)
+
+    plt.xlabel('Time')
+    plt.ylabel('Note')
+
+    plt.subplot(212)
+
+    print("Pred PLOT ---")
+    # print(pred.size())
+    print(len(pred))
+    print(len(pred[0]))
+    print(pred)
+
+    plt.specgram(pred)
+    plt.xlabel('Time')
+    plt.ylabel('Note')
+
+    plt.show()
+
     #plt.show()
 
 
