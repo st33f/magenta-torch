@@ -536,6 +536,8 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     print("--- PLOT SPECTORGRAM ---")
     first_target = torch.argmax(target[:, 0, :], dim=1)
     first_pred = pred[:, 0, :].T
+    first_pred.cpu()
+    first_target.cpu()
     #print(first_pred.size())
     #print(first_pred)
     #print(target.size())
