@@ -36,14 +36,16 @@ def ELBO(pred, target, mu, log_var, free_bits):
     p = Normal(mu_prior, sigma_prior)
     q = Normal(mu, sigma)
     kl_div = kl_divergence(q, p)
+    print(kl_div)
     #print(f"kl div: {kl_div}")
     print(f"mean KL div: {torch.mean(kl_div)}")
-    elbo = -likelihood
+    r_loss = -likelihood
+    #elbo = -likelihood
     #elbo = torch.mean(likelihood) - torch.max(torch.mean(kl_div)-free_bits, torch.tensor([0], dtype=torch.float, device=device))
-    print(f"elbo: {elbo}")
-    print(f"-elbo: {-elbo}")
+    # print(f"elbo: {elbo}")
+    # print(f"-elbo: {-elbo}")
 
-    return -elbo, kl_div.mean()
+    return r_loss, kl_div
 
 
 def custom_ELBO(pred, target, mu, sigma, free_bits):

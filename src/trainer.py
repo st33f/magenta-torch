@@ -114,11 +114,14 @@ class Trainer:
         #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         #elbo = r_loss + kl_weight*kl
-        elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
+        #elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
+
+        # THIS IFFOR NO KL VERSION
+        elbo = r_loss
 
         # print(f"Scores for batch: {step}")
         # print(f"R_loss: {r_loss}")
-        # print(f"Elbo: {elbo}")
+        print(f"Elbo in training script: {elbo}")
         # print(f"KL weight: {kl_weight}")
         # print(f"Hamming distance: {ham_dist}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
@@ -131,7 +134,7 @@ class Trainer:
         acc = 0.
         ham_dist = 0.
         # r_loss = 0.
-        return elbo, kl.mean(), r_loss, acc, ham_dist
+        return elbo, kl, r_loss, acc, ham_dist
 
     def compute_flat_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
