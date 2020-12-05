@@ -120,10 +120,10 @@ class Trainer:
         #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         #elbo = r_loss + kl_weight*kl
-        #elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
+        elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
 
         # THIS IS FOR "NO KL VERSION"
-        elbo = r_loss
+        # elbo = r_loss
 
         # print(f"Scores for batch: {step}")
         # print(f"R_loss: {r_loss}")
