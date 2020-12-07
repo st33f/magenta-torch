@@ -3,6 +3,8 @@ import sys
 import torch
 import pypianoroll as pr
 from matplotlib import pyplot as plt
+import matplotlib.colors as colors
+
 from music21 import *
 import pretty_midi
 sys.path.append(".")
@@ -537,16 +539,40 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     first_target = torch.argmax(target[:, 0, :], dim=1)
     first_pred = pred[:, 0, :].T
 
+
     #print(first_pred.size())
     #print(first_pred)
     #print(target.size())
 
     # Plot Spectorgram for pred and target
-    fig, ax = plt.subplots(nrows=2, ncols=1, sharex='col', sharey='row', figsize=(12, 8), dpi=80)
+    fig, ax = plt.subplots(nrows=2, ncols=1, sharex='col', sharey='row', figsize=(18, 8), dpi=80)
+    ax[0].set_ylim(top=62)
+
 
     plt.title('Spectrogram of pred')
-    im = ax[0].scatter(range(256), first_target.cpu())
+    plot_pred = first_target.cpu()
+    plot_target = torch.argmax(pred[:, 0, :], dim=1).cpu()
 
+    y1 = []
+    y2 = []
+    hits = []
+    for i in range(len(plot_pred)):
+        # check if pred and target are equal
+        if plot_pred[i] == plot_target[i]:
+            hits.append(plot_pred[i])
+            y1.append(-1)
+            y2.append(-1)
+        else:
+            y1.append(plot_pred[i])
+            y2.append(plot_target[i])
+            hits.append(-1)
+
+    im = ax[0].scatter(range(256), y1, marker='s', c="royalblue", edgecolors='none', s=16)
+    im = ax[0].scatter(range(256), y2, c="tomato", marker='s', edgecolors='none', s=16)
+    im = ax[0].scatter(range(256), hits, c="forestgreen", marker='s', edgecolors='none', s=16)
+    # ax[0].fill_between(range(256), y1-1, y2+1, where=y1==y2, facecolor='green', step='mid', alpha=0.7, interpolate=True)
+
+    ax[0].set_ylim(bottom=0, top=63)
     ax[0].set_xlabel('Time')
     ax[0].set_ylabel('Note')
     ax[1].set_xlabel('Time')
@@ -554,10 +580,14 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
 
     #plt.imshow(data, cmap='tab20_r', interpolation='nearest')
 
-    im = ax[1].imshow(first_pred.cpu(), cmap='viridis', interpolation='nearest')
+    # now plot the spectorgram
+    #plt.yscale("log")
+
+    im = ax[1].imshow(first_pred.cpu(), cmap='viridis', interpolation='nearest', norm=colors.LogNorm(vmin=0.001, vmax=1.0))
     ax[1].invert_yaxis()
+    # ax[1].set_ylim(top=62)
     fig.colorbar(im, ax=ax)
-    fig.clim(0, 1)
+    # im.set_clim(0, 1)
 
     #plt.show()
 

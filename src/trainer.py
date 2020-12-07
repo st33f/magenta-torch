@@ -187,7 +187,7 @@ class Trainer:
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
-        elbo, kl_div, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
+        elbo, mean_kl_div, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.new_ELBO_loss(iter, model, batch, use_teacher_forcing, da)
@@ -200,18 +200,18 @@ class Trainer:
         #print(f"elbo train batch: {elbo}")
 
         # send batch loss data to wandb - regular loss functions
-        if kl_div != 0:
-            wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "train KL Div": kl_div.cpu(),
+        if mean_kl_div != 0:
+            wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "training mean KL Div": mean_kl_div.cpu(),
                     "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
         else:
             # send batch loss data to wandb - r_loss only loss function
             wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(), "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
-        wandb.log({ "training R_loss": r_loss.cpu(), "Log(Training R_loss": torch.log(r_loss).cpu()})#, "Training Accuracy": acc})
+        wandb.log({ "training R_loss": r_loss.cpu()})#, "Training Accuracy": acc})
 
-        if kl_div != 0:
-            return elbo.item(), torch.mean(kl_div)
+        if mean_kl_div != 0:
+            return elbo.item(), mean_kl_div
         else:
             return elbo.item(), 0.
         
@@ -342,7 +342,8 @@ class Trainer:
                     val_elbo_avg = sum(val_elbo) / len(val_elbo)
                     #div = torch.mean(torch.tensor(val_kl))
                     div = sum(val_kl) / len(val_kl)
-                    eval_r_loss = torch.mean(torch.tensor(val_r_loss))
+                    eval_r_loss = sum(val_r_loss) / len(val_r_loss)
+                    #eval_r_loss = torch.mean(torch.tensor(val_r_loss))
                     eval_acc = torch.mean(torch.tensor(val_acc))
                     eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
                     print('----------Validation')
