@@ -567,9 +567,9 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
             y2.append(plot_target[i])
             hits.append(-1)
 
-    im = ax[0].scatter(range(256), y1, marker='s', c="royalblue", edgecolors='none', s=16)
-    im = ax[0].scatter(range(256), y2, c="tomato", marker='s', edgecolors='none', s=16)
-    im = ax[0].scatter(range(256), hits, c="forestgreen", marker='s', edgecolors='none', s=16)
+    im = ax[0].scatter(range(256), y1, marker='s', c="cornflowerblue", edgecolors='none', s=16)
+    im = ax[0].scatter(range(256), y2, c="coral", marker='s', edgecolors='none', s=16)
+    im = ax[0].scatter(range(256), hits, c="limegreen", marker='s', edgecolors='none', s=16)
     # ax[0].fill_between(range(256), y1-1, y2+1, where=y1==y2, facecolor='green', step='mid', alpha=0.7, interpolate=True)
 
     ax[0].set_ylim(bottom=0, top=63)
