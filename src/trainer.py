@@ -122,6 +122,8 @@ class Trainer:
         #elbo = r_loss + kl_weight*kl
         elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
 
+        kl_cost = kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
+
         # THIS IS FOR "NO KL VERSION"
         # elbo = r_loss
 
@@ -132,7 +134,7 @@ class Trainer:
         # print(f"Hamming distance: {ham_dist}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
 
-        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy())})
+        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy()), "kl cost": kl_cost.cpu()})
         # print()
         # print(sigma)
         #return kl_weight*elbo, kl
@@ -342,15 +344,19 @@ class Trainer:
                     val_elbo_avg = sum(val_elbo) / len(val_elbo)
                     #div = torch.mean(torch.tensor(val_kl))
                     div = sum(val_kl) / len(val_kl)
-                    eval_r_loss = sum(val_r_loss) / len(val_r_loss)
-                    #eval_r_loss = torch.mean(torch.tensor(val_r_loss))
+                    # eval_r_loss = sum(val_r_loss) / len(val_r_loss)
+                    eval_r_loss = torch.mean(torch.tensor(batch_r_loss))
                     eval_acc = torch.mean(torch.tensor(val_acc))
                     eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
                     print('----------Validation')
                     print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
                     # send batch loss data to wandb
-                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
-                    wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
+                    # wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
+                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo[-1], "Eval KL Div": val_kl[-1]})
+
+                    # wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
+                    wandb.log({"Epoch": epoch, "Eval R_loss": val_r_loss[-1], "Eval Accuracy": eval_acc,
+                               "Eval Hamming Dist": eval_ham_dist})
 
 
 
