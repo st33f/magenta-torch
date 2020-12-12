@@ -2,7 +2,7 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'clean/smallest-no-held-note'
+    pickle_store_folder: 'clean/clean_midi_1'
     include_unknown: True
     only_unknown: True
     low_crop: 24 
@@ -33,7 +33,7 @@ trainer:
     plot_every: 1
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/december_clean_data'
-    use_danceability: &DA False
+    use_danceability: &DA True
     use_fake_data: False
     
 sampler:
@@ -54,16 +54,16 @@ model:
     use_danceability: *DA
 
 data: # Specify paths to data
-    train_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/X_train.pickle'
-    val_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/X_test.pickle'
-    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/I_train.pickle'
-    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/I_test.pickle'
-    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/T_train.pickle'
-    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/T_test.pickle'
-    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/train_paths.pickle'
-    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/data_november/happy_birthday/test_paths.pickle'
-    danceability_paths: '/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle'
-    filepaths: '/Users/stefanwijtsma/code/mt/extra_features/filenames.pickle'
+    train_data: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/X_train.pickle'
+    val_data: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/X_test.pickle'
+    train_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/I_train.pickle'
+    val_instrument_data: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/I_test.pickle'
+    train_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/T_train.pickle'
+    val_tempo_data: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/T_test.pickle'
+    train_song_paths: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/train_paths.pickle'
+    val_song_paths: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/test_paths.pickle'
+    train_extra_features: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/extra_features_train.pickle'
+    val_extra_features: '/Users/stefanwijtsma/code/magenta-torch/clean/spotify_test/extra_features_test.pickle'
 
 
 das-data:
@@ -75,8 +75,8 @@ das-data:
     val_tempo_data: '/var/scratch/swa420/data-dec/smallest/T_test.pickle'
     train_song_paths: '/var/scratch/swa420/data-dec/smallest/train_paths.pickle'
     val_song_paths: '/var/scratch/swa420/data-dec/smallest/test_paths.pickle'
-    danceability_paths: '/var/scratch/swa420/data/colab_data/danceability.pickle'
-    filepaths: '/var/scratch/swa420/data/colab_data/filenames.pickle'
+    train_extra_features: '/var/scratch/swa420/data-dec/smallest/extra_features_train.pickle'
+    val_extra_features: '/var/scratch/swa420/data-dec/smallest/extra_features_test.pickle'
 
 
 

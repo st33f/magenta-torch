@@ -5,10 +5,12 @@ import pickle
 import sys
 import yaml
 import pandas as pd
-sys.path.append(".")
-
+import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
+sys.path.append(".")
+
+
 
 from src.model import *
 from src.trainer import *
@@ -64,22 +66,31 @@ def load_model(model_type, params):
         if params['use_danceability']:
             model = DanceabilityGRUVAE(**params)
     else:
-        raise Exception("Invalid model type. Expected lstm or gru")
+        raise Exception("Invalid model type. Expected lstm, gru of fixed-sigma")
     return model
 
+def unpickle(p):
+    data = pickle.load(open(p, 'rb'))
+    return data
 
-def load_data(train_data, val_data, batch_size, validation_split=0.2, random_seed=874, song_paths=None, danceability=None, use_fake_data=False):
+
+def load_data(train_data, val_data, batch_size, validation_split=0.2, random_seed=874, train_paths=None, val_paths=None, train_ef=None, val_ef=None, use_fake_data=False):
+    train_paths = unpickle(train_paths)
+    val_paths = unpickle(val_paths)
+    train_ef = unpickle(train_ef)
+    val_ef = unpickle(val_ef)
+
     train_loader = None
     val_loader = None
 
     # for testing purposes
     if use_fake_data:
         X_train = generate_fake_songs(2, 10)
-        train_data = MidiDataset(X_train, song_paths=song_paths)
+        train_data = MidiDataset(X_train, song_paths=train_paths)
         train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
         X_val = generate_fake_songs(2, 4)
-        val_data = MidiDataset(X_val, song_paths=song_paths)
+        val_data = MidiDataset(X_val, song_paths=val_paths)
         val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader
 
@@ -87,30 +98,30 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
     # the real loader
     if train_data != '':
         X_train = pickle.load(open(train_data, 'rb'))
-        train_data = MidiDataset(X_train, song_paths=song_paths, danceability=danceability)
+        train_data = MidiDataset(X_train, song_paths=train_paths, danceability=train_ef)
         print(' --- train data summary --- ')
-        print(len(train_data.danceabilities))
-        print(len(song_paths))
-        last_batch_index = train_data.index_mapper[-1]
-        print(f"last_batch: {last_batch_index}")
-        last_song_id = last_batch_index[0]
-        print(f"last_song_id: {last_song_id}")
+        print(f"len danceability {len(train_data.danceabilities)}")
+        print(f"Len song paths: {len(train_paths)}")
+        #last_batch_index = train_data.index_mapper[-1]
+        #print(f"last_batch: {last_batch_index}")
+        #last_song_id = last_batch_index[0]
+        #print(f"last_song_id: {last_song_id}")
 
         # print(train_data.song_to_idx)
         train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-        print(f'len train loader: {len(train_loader)}')
-        print(f"da slice training: {len(train_data.danceabilities[:last_song_id])}")
-        print(f"da slice val: {len(train_data.danceabilities[last_song_id:])}")
-        danceability = train_data.danceabilities[last_song_id:]
-        song_paths = song_paths[last_song_id:]
+        # print(f'len train loader: {len(train_loader)}')
+        # print(f"da slice training: {len(train_data.danceabilities[:last_song_id])}")
+        # print(f"da slice val: {len(train_data.danceabilities[last_song_id:])}")
+        # danceability = train_data.danceabilities[last_song_id:]
+        # song_paths = song_paths[last_song_id:]
         # REDEFINE DA WITH SLICE, SO VAL DATA DA DOESNT CONTAIN TRAIN DATA AND STARTS AT 0
     if val_data != '':
         X_val = pickle.load(open(val_data, 'rb'))
-        val_data = MidiDataset(X_val, song_paths=song_paths, danceability=danceability)
+        val_data = MidiDataset(X_val, song_paths=val_paths, danceability=val_ef)
         val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         print(' --- val data summary --- ')
         print(len(val_data.danceabilities))
-        print(len(song_paths))
+        print(len(val_paths))
         print(f'len val loader: {len(val_loader)}')
 
     return train_loader, val_loader
@@ -151,14 +162,16 @@ def main(args):
     #filepaths, danceability = load_extra_features(args.extra_features)
     #filepaths = load_filepaths()
     #print(danceability)
-    filepaths = load_filepaths(data_params['filepaths'])
-    danceability = load_danceability(data_params['danceability_paths'])
+    #filepaths = load_filepaths(data_params['filepaths'])
+    # danceability = load_danceability(data_params['danceability_paths'])
 
-    train_data, val_data = load_data(data_params['train_data'], 
+    train_data, val_data = load_data(data_params['train_data'],
                                      data_params['val_data'], 
                                      trainer_params['batch_size'],
-                                     song_paths=filepaths,
-                                     danceability=danceability,
+                                     train_paths=data_params['train_song_paths'],
+                                     val_paths=data_params['val_song_paths'],
+                                     train_ef=data_params['train_extra_features'],
+                                     val_ef=data_params['val_extra_features'],
                                      use_fake_data=trainer_params['use_fake_data'])
     # print(f"len train data: {len(train_data)}")
     # print(f"len Val data: {len(val_data)}")

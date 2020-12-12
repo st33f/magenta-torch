@@ -148,7 +148,7 @@ class DanceabilityGRUVAE(nn.Module):
         # for i in x:
         #     print(i.size())
         #data, danceability = x
-        #print(f"da: {da}")
+        print(f"da: {da}")
         #print(f"data model: {data}")
         #data, dance = x
         #print(f"data: {data.size()}")

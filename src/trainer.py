@@ -250,11 +250,12 @@ class Trainer:
                         data = torch.unsqueeze(data, dim=1)
                     print("Data size", data.size())
                     data = data.to(device)
-                    pred_for_viz = self.get_pred_from_data(model, data)
+                    pred_for_viz = self.get_pred_from_data(model, data, da=da)
                     plot_spectogram(pred_for_viz, data)
 
-                    if use_da:
+                    if self.use_danceability == True:
                         da = da.to(device)
+                        print(f"da trainer.py; {da}")
                         # pass it both to the trainer
                         elbo, kl = self.train_batch(iter, model, data, da)
                     else:

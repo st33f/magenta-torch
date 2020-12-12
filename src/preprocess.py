@@ -10,6 +10,8 @@ import time
 import matplotlib.pyplot as plt
 from pretty_midi import note_number_to_name
 
+from src.spotify import make_query, execute_query, get_features
+
 np.set_printoptions(threshold=1000)#np.inf)
 
 t = str(int(round(time.time())))
@@ -294,8 +296,8 @@ class MidiPreprocessor:
                 note_tick_end = note.end * fs
                 absolute_start = int(round(note_tick_start))
                 absolute_end = int(round(note_tick_end))
-                print("absolute note times ---")
-                print(absolute_start, absolute_end)
+                # print("absolute note times ---")
+                # print(absolute_start, absolute_end)
 
                 decimal = note_tick_start - absolute_start
                 #see if it starts at a tick or not
@@ -440,15 +442,15 @@ class MidiPreprocessor:
         assert(len(chosen_piano_rolls) == len(chosen_held_note_rolls))
         assert(len(chosen_piano_rolls) == len(chosen_programs))
 
-        if len(chosen_piano_rolls) > 0:
-            print("Held notes ----")
-            print(len(chosen_held_note_rolls))
-            print(chosen_held_note_rolls[0].shape)
-            #print(chosen_held_note_rolls[0])
-
-            print("Piano rolls ----")
-            print(len(chosen_piano_rolls))
-            print(chosen_piano_rolls[0].shape)
+        #if len(chosen_piano_rolls) > 0:
+            # print("Held notes ----")
+            # print(len(chosen_held_note_rolls))
+            # print(chosen_held_note_rolls[0].shape)
+            # #print(chosen_held_note_rolls[0])
+            #
+            # print("Piano rolls ----")
+            # print(len(chosen_piano_rolls))
+            #print(chosen_piano_rolls[0].shape)
             # print(chosen_piano_rolls[0])
             #print(piano_rolls[0])
 
@@ -471,8 +473,8 @@ class MidiPreprocessor:
             #this reduces the feature space significantly
             Y = Y[:,self.low_crop:self.high_crop]
 
-            print("Y ------")
-            print(Y.shape)
+            #print("Y ------")
+            #print(Y.shape)
             # print(Y)
             # Here we append now the HELD NOTES ROLLL
             if self.include_held_note:
@@ -567,10 +569,10 @@ class MidiPreprocessor:
                 if self.output_length == padding_length:
                     padding_length = 0
                 else:
-                    print("Padding Length", padding_length)
+                    #print("Padding Length", padding_length)
                     #pad to the right..
                     Y = np.pad(Y, ((0,padding_length),(0, 0)), 'constant', constant_values=(0, 0))
-                    print(Y)
+                    #print(Y)
                     if self.include_silent_note:
                         Y[-padding_length:,-1] = 1
                 number_of_splits = Y.shape[0] // self.output_length
@@ -610,6 +612,8 @@ class MidiPreprocessor:
         T_list = []
         V_list = []
         D_list = []
+        extra_features_list = []
+
         no_imported = 0
         n_input_seqs = 0
         n_dropped = 0
@@ -655,25 +659,42 @@ class MidiPreprocessor:
 
                             if X is not None and Y is not None:
                                 n_input_seqs += X.shape[0]
-                                print("X-------")
-                                print(X)
+                                # print("X-------")
+                                # print(X)
                                 # print(X[0])
                                 clean_x, clean_y, clean_v, clean_d, dropped = self.drop_empty_seqs(X, Y, V, D)
                                 n_dropped += dropped
 
-                                X_list.append(clean_x)
-                                Y_list.append(clean_y)
-                                V_list.append(clean_v)
-                                D_list.append(clean_d)
-                                # X_list.append(X)
-                                # Y_list.append(Y)
-                                I_list.append(I)
-                                T_list.append(T)
-                                # V_list.append(V)
-                                # D_list.append(D)
-                                paths.append(_path + _name)
-                                c_classes.append(C)
-                                no_imported += 1
+                                print("-----Spotify Shizzle -------")
+                                filepath = _path + _name
+
+                                # get Artist and trackname
+                                artist, track = make_query(filepath, folder)
+                                print(artist, " - ", track)
+
+                                # try to get Spotify Track ID
+                                track_id = execute_query(track, artist)
+                                if track_id:
+                                    danceability, mode, energy = get_features(track_id)
+                                    print("---Features -- ")
+                                    print(danceability, mode, energy)
+                                    print("\n\n\n")
+
+                                    X_list.append(clean_x)
+                                    Y_list.append(clean_y)
+                                    V_list.append(clean_v)
+                                    D_list.append(clean_d)
+                                    # X_list.append(X)
+                                    # Y_list.append(Y)
+                                    I_list.append(I)
+                                    T_list.append(T)
+                                    # V_list.append(V)
+                                    # D_list.append(D)
+                                    extra_features_list.append((filepath, danceability))
+
+                                    paths.append(_path + _name)
+                                    c_classes.append(C)
+                                    no_imported += 1
 
 
         assert(len(X_list) == len(paths))
@@ -682,6 +703,10 @@ class MidiPreprocessor:
         assert(len(X_list) == len(T_list))
         assert(len(X_list) == len(D_list))
         assert(len(X_list) == len(V_list))
+
+        print(f"Total songs processed: {len(X_list)}")
+        print(f"Extra features: {extra_features_list}")
+        print(f"paths and extra features check: {paths[5], extra_features_list[5][0]}")
 
         print(f"Sequences (16 bars) imported: {n_input_seqs}")
         print(f"Sequences (silent) dropped: {n_dropped}")
@@ -696,7 +721,8 @@ class MidiPreprocessor:
                                 Y_list, 
                                 X_list, 
                                 c_classes,
-                                paths, 
+                                paths,
+                                extra_features_list,
                                 test_size=self.test_fraction, 
                                 random_state=42, 
                                 stratify=c_classes)
@@ -717,9 +743,12 @@ class MidiPreprocessor:
         c_test = data[13]
         train_paths = data[14]
         test_paths = data[15]
+        extra_features_train = data[16]
+        extra_features_test = data[17]
 
         train_set_size = len(X_train)
-        test_set_size = len(X_test)  
+        test_set_size = len(X_test)
+
 
         if save_imported_midi_as_pickle:
             if not os.path.exists(self.pickle_store_folder):
@@ -748,6 +777,9 @@ class MidiPreprocessor:
 
             pickle.dump(train_paths,open(self.pickle_store_folder+'/train_paths.pickle', 'wb'))
             pickle.dump(test_paths,open(self.pickle_store_folder+'/test_paths.pickle', 'wb'))
+
+            pickle.dump(extra_features_train, open(self.pickle_store_folder + '/extra_features_train.pickle', 'wb'))
+            pickle.dump(extra_features_test, open(self.pickle_store_folder + '/extra_features_test.pickle', 'wb'))
 
         self.plot_dataset_metrics(X_train)
         return data
