@@ -67,16 +67,16 @@ data: # Specify paths to data
 
 
 das-data:
-    train_data: '/var/scratch/swa420/data/smallest/X_train.pickle'
-    val_data: '/var/scratch/swa420/data/smallest/X_test.pickle'
-    train_instrument_data: '/var/scratch/swa420/data/smallest/I_train.pickle'
-    val_instrument_data: '/var/scratch/swa420/data/smallest/I_test.pickle'
-    train_tempo_data: '/var/scratch/swa420/data/smallest/T_train.pickle'
-    val_tempo_data: '/var/scratch/swa420/data/smallest/T_test.pickle'
-    train_song_paths: '/var/scratch/swa420/data/smallest/train_paths.pickle'
-    val_song_paths: '/var/scratch/swa420/data/smallest/test_paths.pickle'
-    train_extra_features: '/var/scratch/swa420/data/smallest/extra_features_train.pickle'
-    val_extra_features: '/var/scratch/swa420/data/smallest/extra_features_test.pickle'
+    train_data: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/X_train.pickle'
+    val_data: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/X_test.pickle'
+    train_instrument_data: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/I_train.pickle'
+    val_instrument_data: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/I_test.pickle'
+    train_tempo_data: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/T_train.pickle'
+    val_tempo_data: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/T_test.pickle'
+    train_song_paths: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/train_paths.pickle'
+    val_song_paths: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/test_paths.pickle'
+    train_extra_features: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/extra_features_train.pickle'
+    val_extra_features: '/home/swa420/magenta-torch/scratch/data/clean_midi_1/extra_features_test.pickle'
 
 
 
