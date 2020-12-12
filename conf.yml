@@ -2,7 +2,7 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'clean/clean_midi_1'
+    pickle_store_folder: 'clean/smallest'
     include_unknown: True
     only_unknown: True
     low_crop: 24 
@@ -67,16 +67,16 @@ data: # Specify paths to data
 
 
 das-data:
-    train_data: '/var/scratch/swa420/data-dec/smallest/X_train.pickle'
-    val_data: '/var/scratch/swa420/data-dec/smallest/X_test.pickle'
-    train_instrument_data: '/var/scratch/swa420/data-dec/smallest/I_train.pickle'
-    val_instrument_data: '/var/scratch/swa420/data-dec/smallest/I_test.pickle'
-    train_tempo_data: '/var/scratch/swa420/data-dec/smallest/T_train.pickle'
-    val_tempo_data: '/var/scratch/swa420/data-dec/smallest/T_test.pickle'
-    train_song_paths: '/var/scratch/swa420/data-dec/smallest/train_paths.pickle'
-    val_song_paths: '/var/scratch/swa420/data-dec/smallest/test_paths.pickle'
-    train_extra_features: '/var/scratch/swa420/data-dec/smallest/extra_features_train.pickle'
-    val_extra_features: '/var/scratch/swa420/data-dec/smallest/extra_features_test.pickle'
+    train_data: '/var/scratch/swa420/data/smallest/X_train.pickle'
+    val_data: '/var/scratch/swa420/data/smallest/X_test.pickle'
+    train_instrument_data: '/var/scratch/swa420/data/smallest/I_train.pickle'
+    val_instrument_data: '/var/scratch/swa420/data/smallest/I_test.pickle'
+    train_tempo_data: '/var/scratch/swa420/data/smallest/T_train.pickle'
+    val_tempo_data: '/var/scratch/swa420/data/smallest/T_test.pickle'
+    train_song_paths: '/var/scratch/swa420/data/smallest/train_paths.pickle'
+    val_song_paths: '/var/scratch/swa420/data/smallest/test_paths.pickle'
+    train_extra_features: '/var/scratch/swa420/data/smallest/extra_features_train.pickle'
+    val_extra_features: '/var/scratch/swa420/data/smallest/extra_features_test.pickle'
 
 
 
