@@ -185,7 +185,7 @@ class Danceability_BiGRUEncoder(nn.Module):
         if da is not None:
             try:
                 danceability = da.view(batch_size, 1)
-                danceability.to(device)
+                danceability = danceability.to(device)
                 # print(f"dance after: {danceability.size()}")
                 print(f"\n  Danceability size: {danceability.size()}")
                 print(f"  Danceability: {danceability}")
