@@ -33,7 +33,7 @@ trainer:
     plot_every: 1
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/december_clean_data'
-    use_danceability: &DA False
+    use_danceability: &DA True
     use_fake_data: False
     
 sampler:
