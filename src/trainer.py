@@ -305,6 +305,10 @@ class Trainer:
                             data, da = batch
                             data = data.to(device)
                             data = data.transpose(0, 1).squeeze()
+                            # check if batch_dim = 1, the unsqueeze to add dim
+                            if len(data.size()) < 3:
+                                data = torch.unsqueeze(data, dim=1)
+
                             if use_da:
                                 da = da.to(device)
                                 elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)
