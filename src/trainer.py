@@ -273,7 +273,7 @@ class Trainer:
                     #print(f"batch_loss: {batch_loss}")
                     batch_loss.append(elbo)
                     batch_kl.append(kl)
-
+                    iter += 1
 
 
                     if iter%self.print_every == 0:
@@ -296,7 +296,7 @@ class Trainer:
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")
                     t.update()
-                    iter += 1
+
 
             train_loss.append(torch.mean(torch.tensor(batch_loss)))
             train_kl.append(torch.mean(torch.tensor(batch_kl)))
