@@ -140,8 +140,8 @@ class Trainer:
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
                    "sigma": wandb.Histogram(sigma.cpu().detach().numpy()),
                    "KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy()),
-                   "kl cost": kl_cost.cpu(),
-                   "Iteration": step})
+                   "kl cost": kl_cost.cpu()},
+                   step=step)
         acc = 0.
         ham_dist = 0.
         # r_loss = 0.
@@ -207,14 +207,16 @@ class Trainer:
 
         # send batch loss data to wandb - regular loss functions
         if mean_kl_div != 0:
-            wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.cpu(),
+            wandb.log({"train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.cpu(),
                         "training mean KL Div": mean_kl_div.cpu(),
-                        "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
+                        "LR": self.scheduler.get_last_lr()},
+                      step=iter) #, "Hamming Dist": ham_dist})
         else:
             # send batch loss data to wandb - r_loss only loss function
-            wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(),
+            wandb.log({"train ELBO (batch avg)": elbo.item(),
                        "training R_loss": r_loss.cpu(),
-                       "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
+                       "LR": self.scheduler.get_last_lr()},
+                      step=iter)  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
         wandb.log({})#, "Training Accuracy": acc})

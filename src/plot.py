@@ -527,9 +527,9 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False, 
     fig, (ax1) = plot_multitrack(to_plot, mode="stacked", grid="both")
     ax1[0].set_ylim(bottom=36, top=116)
     if is_eval:
-        wandb.log({"Eval Pianorolls": fig, "Iteration": iter})
+        wandb.log({"Eval Pianorolls": fig}, step=iter)
     else:
-        wandb.log({"Training Pianorolls": fig, "Iteration": iter})
+        wandb.log({"Training Pianorolls": fig}, step=iter)
     plt.close('all')
 
     #plt.show()
@@ -592,9 +592,9 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False, iter=None):
     #plt.show()
 
     if is_eval:
-        wandb.log({"Eval Spectogram": fig, "Iteration": iter})
+        wandb.log({"Eval Spectogram": fig}, step=iter)
     else:
-        wandb.log({"Training Spectogram": fig, "Iteration": iter})
+        wandb.log({"Training Spectogram": fig}, step=iter)
     plt.close('all')
 
 
