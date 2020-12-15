@@ -82,7 +82,6 @@ class Trainer:
         return pred
 
     def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=1, is_eval=True, iter=None):
-        model.eval()
         #pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
         #pred = model.reconstruct(batch, 1)
@@ -108,7 +107,6 @@ class Trainer:
             for example in range(num_plots):
                 plot_pred_and_target(flat_pred[:,example,:].detach().numpy(),
                                      batch[:,example,:].detach().numpy(), is_eval, iter=iter)
-        model.train()
 
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
