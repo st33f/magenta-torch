@@ -81,7 +81,7 @@ class Trainer:
         model.train()
         return pred
 
-    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=1, is_eval=True):
+    def plot_last_batch(self, model, batch, use_teacher_forcing=True, da=None, num_plots=1, is_eval=True, iter=None):
         model.eval()
         #pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
@@ -107,7 +107,7 @@ class Trainer:
             # print(f"flat-pred: {flat_pred}")
             for example in range(num_plots):
                 plot_pred_and_target(flat_pred[:,example,:].detach().numpy(),
-                                     batch[:,example,:].detach().numpy(), is_eval)
+                                     batch[:,example,:].detach().numpy(), is_eval, iter=iter)
         model.train()
 
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
@@ -134,11 +134,14 @@ class Trainer:
         # print(f"Hamming distance: {ham_dist}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
 
-        wandb.log({"KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy()), "kl cost": kl_cost.cpu()})
         # print()
         # print(sigma)
         #return kl_weight*elbo, kl
-        wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()), "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
+        wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
+                   "sigma": wandb.Histogram(sigma.cpu().detach().numpy()),
+                   "KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy()),
+                   "kl cost": kl_cost.cpu(),
+                   "Iteration": step})
         acc = 0.
         ham_dist = 0.
         # r_loss = 0.
@@ -156,7 +159,8 @@ class Trainer:
         acc = 0.
         ham_dist = 0.
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
-                   "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
+                   "sigma": wandb.Histogram(sigma.cpu().detach().numpy()),
+                   "Iteration": step})
         return elbo, r_loss, kl_div, acc, ham_dist
 
     def r_loss_only(self, step, model, batch, use_teacher_forcing=True, da=None):
@@ -203,14 +207,17 @@ class Trainer:
 
         # send batch loss data to wandb - regular loss functions
         if mean_kl_div != 0:
-            wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(), "training mean KL Div": mean_kl_div.cpu(),
-                    "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
+            wandb.log({ "Iteration": iter, "train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.cpu(),
+                        "training mean KL Div": mean_kl_div.cpu(),
+                        "LR": self.scheduler.get_last_lr() }) #, "Hamming Dist": ham_dist})
         else:
             # send batch loss data to wandb - r_loss only loss function
-            wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(), "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
+            wandb.log({"Iteration": iter, "train ELBO (batch avg)": elbo.item(),
+                       "training R_loss": r_loss.cpu(),
+                       "LR": self.scheduler.get_last_lr()})  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
-        wandb.log({ "training R_loss": r_loss.cpu()})#, "Training Accuracy": acc})
+        wandb.log({})#, "Training Accuracy": acc})
 
         if mean_kl_div != 0:
             return elbo.item(), mean_kl_div
@@ -238,20 +245,22 @@ class Trainer:
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
                     model.train()
+
+                    # init results dict
+                    results = dict()
+
                     # first, get data AND danceability from the dataset
                     data, da = batch
-
-                    print("Data size", data.size())
+                    # get batch dim in middle
                     data = data.transpose(0, 1).squeeze()
-                    print("Data size", data.size())
 
-                    # check if batch_dim = 1, the unsqueeze to add dim
+                    # check if batch_dim >= 1, if so unsqueeze to add dim
                     if len(data.size()) < 3:
                         data = torch.unsqueeze(data, dim=1)
-                    print("Data size", data.size())
                     data = data.to(device)
+
                     pred_for_viz = self.get_pred_from_data(model, data, da=da)
-                    plot_spectogram(pred_for_viz, data)
+                    plot_spectogram(pred_for_viz, data, iter=iter)
 
                     if self.use_danceability == True:
                         da = da.to(device)
@@ -264,7 +273,7 @@ class Trainer:
                     #print(f"batch_loss: {batch_loss}")
                     batch_loss.append(elbo)
                     batch_kl.append(kl)
-                    iter += 1
+
 
 
                     if iter%self.print_every == 0:
@@ -279,14 +288,15 @@ class Trainer:
                     # plot the pred and targets as pianoroll
                     if iter%self.plot_every == 0:
                         if use_da:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False)
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False, iter=iter)
                         else:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False)
+                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False, iter=iter)
 
 
                     # tqdm
                     t.set_postfix(loss=f"{loss_avg}")
                     t.update()
+                    iter += 1
 
             train_loss.append(torch.mean(torch.tensor(batch_loss)))
             train_kl.append(torch.mean(torch.tensor(batch_kl)))

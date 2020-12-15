@@ -168,7 +168,7 @@ class Danceability_BiGRUEncoder(nn.Module):
 
         self.bigru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, bidirectional=True)
         self.mu = nn.Linear(in_features=2 * hidden_size + 1, out_features=latent_size)
-        self.sigma = nn.Linear(in_features=2 * hidden_size +1, out_features=latent_size)
+        self.sigma = nn.Linear(in_features=2 * hidden_size + 1, out_features=latent_size)
         self.softplus = nn.Softplus()
 
     def forward(self, input, h0, da=None):
@@ -362,7 +362,7 @@ class BiGRUEncoder(nn.Module):
         h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
         print("printing h_n:.......")
         print(h_n)
-        wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
+        #wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
         mu = self.mu(h_n)
         sigma = self.softplus(self.sigma(h_n))
         #torch.set_printoptions(profile="full")
@@ -408,7 +408,7 @@ class BiGRU_fixed_sigma_Encoder(nn.Module):
             h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
             print("printing h_n:.......")
             print(h_n)
-            wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
+            #wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
             mu = self.mu(h_n)
             # sigma = self.softplus(self.sigma(h_n))
             sigma = torch.tensor([1], dtype=torch.float, device=device)

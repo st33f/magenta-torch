@@ -508,7 +508,7 @@ first_half = pr.Multitrack(tracks=[numpy_midi, np2], beat_resolution=4)
 true_track = pr.Track(data_padded[30:158, :])
 
 
-def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
+def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False, iter=None):
     if include_silent_note:
         npad = ((0, 0), (49, 19))
     else:
@@ -527,14 +527,14 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False):
     fig, (ax1) = plot_multitrack(to_plot, mode="stacked", grid="both")
     ax1[0].set_ylim(bottom=36, top=116)
     if is_eval:
-        wandb.log({"Eval Pianorolls": fig})
+        wandb.log({"Eval Pianorolls": fig, "Iteration": iter})
     else:
-        wandb.log({"Training Pianorolls": fig})
+        wandb.log({"Training Pianorolls": fig, "Iteration": iter})
     plt.close('all')
 
     #plt.show()
 
-def plot_spectogram(pred, target, num_plots=1, is_eval=False):
+def plot_spectogram(pred, target, num_plots=1, is_eval=False, iter=None):
     print("--- PLOT SPECTORGRAM ---")
     first_target = torch.argmax(target[:, 0, :], dim=1)
     first_pred = pred[:, 0, :].T
@@ -592,9 +592,9 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False):
     #plt.show()
 
     if is_eval:
-        wandb.log({"Eval Spectogram": fig})
+        wandb.log({"Eval Spectogram": fig, "Iteration": iter})
     else:
-        wandb.log({"Training Spectogram": fig})
+        wandb.log({"Training Spectogram": fig, "Iteration": iter})
     plt.close('all')
 
 

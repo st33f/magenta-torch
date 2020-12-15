@@ -17,7 +17,7 @@ from src.helpers import load_danceability
 # General settings
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='conf.yml')
-parser.add_argument('--model_type', type=str, default='lstm')
+parser.add_argument('--model_type', type=str, default='gru')
 parser.add_argument('--mode', type=str, choices=['eval', 'interpolate', 'reconstruct'])
 
 
