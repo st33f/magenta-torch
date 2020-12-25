@@ -239,12 +239,13 @@ class Trainer:
         print()
 
         for epoch in range(start_epoch, end_epoch):
-            # save the randomly initialized model right away
-            # self.save_checkpoint(model, epoch, iter)
+
             batch_loss, batch_kl = [], []
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
                     model.train()
+                    # save the randomly initialized model right away
+                    self.save_checkpoint(model, epoch, iter)
 
                     # init results dict
                     results = dict()
@@ -397,6 +398,10 @@ class Trainer:
         
     def save_checkpoint(self, model, epoch, iter):
         print('Saving checkpoint')
+        if self.use_danceability == True:
+            model_name = "with_danceablity"
+        else:
+            model_name = "regular_musicvae"
         Checkpoint(model=model,
                     epoch=epoch,
                     step=iter,
@@ -404,7 +409,7 @@ class Trainer:
                     scheduler=self.scheduler,
                     samp_rate=self.sampling_rate,
                     KL_rate=self.KL_rate,
-                    free_bits=self.free_bits).save(self.output_dir)
+                    free_bits=self.free_bits).save(self.output_dir, model_name=model_name)
         print('Checkpoint Successful')
         
     def load_checkpoint(self):

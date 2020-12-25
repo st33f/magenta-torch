@@ -6,7 +6,7 @@ import sys
 import yaml
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 import torch.nn as nn
 sys.path.append(".")
 
@@ -66,7 +66,7 @@ def load_model(model_type, params):
         if params['use_danceability']:
             model = DanceabilityGRUVAE(**params)
     else:
-        raise Exception("Invalid model type. Expected lstm, gru of fixed-sigma")
+        raise Exception("Invalid model type. Expected lstm, gru or fixed-sigma")
     return model
 
 def unpickle(p):
@@ -108,7 +108,10 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
         #print(f"last_song_id: {last_song_id}")
 
         # print(train_data.song_to_idx)
-        train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+        train_data_subset = Subset(train_data, list(range(5000)))
+        train_loader = DataLoader(train_data_subset, batch_size=batch_size, shuffle=True)
+        print(f"Len train loader: {len(train_loader)}")
+        #train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
         # print(f'len train loader: {len(train_loader)}')
         # print(f"da slice training: {len(train_data.danceabilities[:last_song_id])}")
         # print(f"da slice val: {len(train_data.danceabilities[last_song_id:])}")
@@ -118,7 +121,9 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
     if val_data != '':
         X_val = pickle.load(open(val_data, 'rb'))
         val_data = MidiDataset(X_val, song_paths=val_paths, danceability=val_ef)
-        val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
+        val_data_subset = Subset(train_data, list(range(1000)))
+        val_loader = DataLoader(val_data_subset, batch_size=batch_size, shuffle=True)
+        #val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         print(' --- val data summary --- ')
         print(len(val_data.danceabilities))
         print(len(val_paths))

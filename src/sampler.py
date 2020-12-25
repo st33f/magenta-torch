@@ -27,13 +27,13 @@ class Sampler:
         
     def reconstruction_loss(self, model, batch, da=None):
         """
-        Return reconstruction loss with and witout teacher forcing
+        Return reconstruction loss with and without teacher forcing
         """
         pred_tf, _, _, _ = model(batch, True, da=da)
         pred, _, _, _ = model(batch, False, da=da)
-        loss_tf = torch.nn.functional.binary_cross_entropy_with_logits(pred_tf, batch, reduction='mean')
-        loss = torch.nn.functional.binary_cross_entropy_with_logits(pred, batch, reduction='mean')
-        return loss_tf, loss
+        loss_tf = torch.nn.functional.binary_cross_entropy(pred_tf, batch, reduction='mean')
+        loss = torch.nn.functional.binary_cross_entropy(pred, batch, reduction='mean')
+        return loss_tf, loss, pred_tf, pred
     
     def evaluate(self, model, input_data):
         """
@@ -45,7 +45,6 @@ class Sampler:
         print(f"input_data: {input_data}")
         with torch.no_grad():
             for idx, batch in enumerate(input_data):
-                print(f"batch: {batch[0].size()}")
                 data, da = batch
                 print(data.size())
                 #print(da)
@@ -54,7 +53,7 @@ class Sampler:
                 batch_size = data.size(1)
                 data = data.view(model.max_sequence_length, batch_size, model.decoder.input_size)
                 data.to(device)
-                batch_loss_tf, batch_loss = self.reconstruction_loss(model, data, da)
+                batch_loss_tf, batch_loss, _, _ = self.reconstruction_loss(model, data, da)
                 loss_acc_tf += batch_loss_tf
                 loss_acc += batch_loss
                 print('idx: %d, loss_tf: %.4f, loss: %.4f' % (idx, batch_loss_tf, batch_loss))

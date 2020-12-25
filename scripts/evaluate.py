@@ -22,35 +22,52 @@ parser.add_argument('--mode', type=str, choices=['eval', 'interpolate', 'reconst
 
 
 def load_model(model_type, params):
+    print(params)
     if model_type == 'lstm':
         model = MusicLSTMVAE(**params)
+    elif model_type == 'fixed-sigma':
+        model = Fixed_sigma_MusicGRUVAE(**params)
     elif model_type == 'gru':
         model = MusicGRUVAE(**params)
+        if params['use_danceability']:
+            model = DanceabilityGRUVAE(**params)
     else:
-        raise Exception("Invalid model type. Expected lstm or gru")
+        raise Exception("Invalid model type. Expected lstm, gru or fixed-sigma")
     return model
 
-def load_data(test_data, batch_size, song_paths='', instrument_path='', tempo_path=''):
+def load_data(test_data, batch_size=2, song_paths='', instrument_path='', tempo_path='', ef_path=""):
     X_test = pickle.load(open(test_data, 'rb'))
-    
+
     song_names = None
     if song_paths != '':
         song_names = [os.path.basename(x) for x in pickle.load(open(song_paths, 'rb'))]
-    
+
     instruments = None
     if instrument_path != '':
         instruments = pickle.load(open(instrument_path, 'rb'))
-    
+
     tempos = None
     if tempo_path != '':
         tempos = pickle.load(open(tempo_path, 'rb'))
 
-    danceability = pickle.load(open("/Users/stefanwijtsma/code/mt/extra_features/danceability.pickle", 'rb'))
+    danceability = None
+    if ef_path != "":
+        danceability = pickle.load(open(ef_path, 'rb'))
 
+    # create dataset
     test_data = MidiDataset(X_test, song_paths=song_names, instruments=instruments, tempos=tempos, danceability=danceability)
     test_loader = DataLoader(test_data, batch_size=batch_size)
 
-    return test_loader
+    print(' --- Test data summary --- ')
+    print(f"Test dataset size: {len(test_loader)} \n")
+
+    print(' --- Extra features --- ')
+    print(f"len danceability {len(test_data.danceabilities)}")
+    print(f"Len song paths: {len(song_names)}")
+
+    print(f"Danceabilities {test_data.danceabilities} \n")
+    print(f"Song names {test_data.song_names}")
+    return test_loader, test_data
 
 def load_tempo(tempo_path, song_id):
     if tempo_path is None:

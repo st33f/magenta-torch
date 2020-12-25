@@ -35,10 +35,10 @@ class Checkpoint:
             raise LookupError("This checkpoint has not been saved.")
         return self._path
 
-    def save(self, experiment_dir):
+    def save(self, experiment_dir, model_name=""):
 
         date_time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
-        self._path = os.path.join(experiment_dir, self.CHECKPOINT_DIR_NAME, date_time)
+        self._path = os.path.join(experiment_dir, self.CHECKPOINT_DIR_NAME, date_time, model_name)
         path = self._path
 
         #If path exists, erase the whole thing nad make a new one.
