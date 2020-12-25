@@ -245,7 +245,7 @@ class Trainer:
                 for idx, batch in enumerate(train_data):
                     model.train()
                     # save the randomly initialized model right away
-                    self.save_checkpoint(model, epoch, iter)
+                    #self.save_checkpoint(model, epoch, iter)
 
                     # init results dict
                     results = dict()
