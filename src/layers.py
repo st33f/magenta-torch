@@ -418,6 +418,7 @@ class BiGRUEncoder(nn.Module):
         self.hidden_size = hidden_size
         self.latent_size = latent_size
         self.num_layers = num_layers
+        self.latent_size = latent_size
 
         self.bigru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, bidirectional=True)
         self.mu = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)

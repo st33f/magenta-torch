@@ -320,6 +320,9 @@ class Trainer:
                             if len(data.size()) < 3:
                                 data = torch.unsqueeze(data, dim=1)
 
+                            pred_for_viz = self.get_pred_from_data(model, data, da=da)
+                            plot_spectogram(pred_for_viz, data, iter=iter, is_eval=True)
+
                             if use_da:
                                 da = da.to(device)
                                 elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)

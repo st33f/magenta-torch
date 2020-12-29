@@ -63,6 +63,8 @@ def load_model(model_type, params):
         model = Fixed_sigma_MusicGRUVAE(**params)
     elif model_type == 'mudance':
         model = MuDanceVAE(**params)
+    elif model_type == 'zdance':
+        model = ZDanceVAE(**params)
     elif model_type == 'gru':
         model = MusicGRUVAE(**params)
         if params['use_danceability']:
