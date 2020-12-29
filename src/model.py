@@ -398,6 +398,7 @@ class ZDanceVAE(nn.Module):
 
         # concat danceability to Z
         danceability = da.view(batch_size, 1)
+        danceability = danceability.to(device)
         print("da: ", da.size())
         print("danceabolity: ", danceability.size())
         new_z = torch.cat((z, danceability), 1)
