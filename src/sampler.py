@@ -34,6 +34,11 @@ class Sampler:
         loss_tf = torch.nn.functional.binary_cross_entropy(pred_tf, batch, reduction='mean')
         loss = torch.nn.functional.binary_cross_entropy(pred, batch, reduction='mean')
         return loss_tf, loss, pred_tf, pred
+
+    def get_pred_from_data(self, model, batch, use_teacher_forcing=True, da=None):
+        with torch.no_grad():
+            pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+        return pred, mu, sigma, z
     
     def evaluate(self, model, input_data):
         """

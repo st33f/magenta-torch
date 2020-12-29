@@ -231,6 +231,74 @@ class Danceability_BiGRUEncoder(nn.Module):
         return torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device)
 
 
+
+class MuDanceVAE_Encoder(nn.Module):
+    """
+    Bi-directional GRU encoder from MusicVAE
+    Inputs:
+    - input_size:
+    - hidden_size: hidden size of bidirectional gru
+    - num_layers: Number of layers for bidirectional gru
+    """
+
+    def __init__(self,
+                 input_size=61,
+                 hidden_size=2048,
+                 latent_size=512,
+                 num_layers=2):
+        super(MuDanceVAE_Encoder, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.latent_size = latent_size
+        self.num_layers = num_layers
+
+        self.bigru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, bidirectional=True)
+        self.mu = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
+        self.sigma = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
+        self.softplus = nn.Softplus()
+
+    def forward(self, input, h0, da=None):
+        print(f"input:  {input.size()}")
+        batch_size = input.size(1)
+
+        if da is not None:
+            try:
+                danceability = da.view(batch_size, 1)
+                danceability = danceability.to(device)
+                print(f"\n  Danceability size: {danceability.size()}")
+                print(f"  Danceability: {danceability}")
+            except:
+                danceability = torch.zeros(batch_size, 1)
+                print(f"DANCEABILITY ERROR\n DA: {da}")
+
+
+        _, h_n = self.bigru(input, h0)
+        h_n = h_n.view(self.num_layers, 2, batch_size, -1)[-1].view(batch_size, -1)
+
+
+        # start comcatenation of danceability scores to MU
+        if da is not None:
+            mu = self.mu(h_n)
+            new_mu = torch.cat((mu, danceability), 1)
+            print(f" New mu size: {new_mu.size()}")
+            print(f" New mu da dimension: {new_mu[:, -1]}")
+
+
+            sigma = self.softplus(self.sigma(h_n))
+            new_sigma = torch.cat((sigma, torch.ones([batch_size, 1], device=device)), 1)
+            print(f" New sigma size: {new_sigma.size()}")
+            print(f" New sigma da dimension: {new_sigma[:, -1]}")
+        else:
+            new_mu = self.mu(h_n)
+            new_sigma = self.softplus(self.sigma(h_n))
+
+        return new_mu, new_sigma
+
+    def init_hidden(self, batch_size=1):
+        # Bidirectional gru so num_layers*2
+        return torch.zeros(self.num_layers * 2, batch_size, self.hidden_size, dtype=torch.float, device=device)
+
+
 class HierarchicalGRUDecoder(nn.Module):
     """
     Hierarchical decoder from MusicVAE
