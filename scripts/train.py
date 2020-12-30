@@ -166,7 +166,7 @@ def main(args):
     wandb.init(project="master-thesis", config=config)
     wandb.config.update({"epochs": args.epochs, "batch_size": trainer_params['batch_size']})
     wandb.run.summary["On_cluster"] = args.on_cluster
-    trainer_params['run_name'] = wandb.run.name
+    run_name = wandb.run.name
 
 
     #filepaths, danceability = load_extra_features(args.extra_features)
@@ -194,7 +194,7 @@ def main(args):
     # Watch the model with weights and biases
     wandb.watch(model)
 
-    trainer = Trainer(**trainer_params)
+    trainer = Trainer(**trainer_params, run_name=run_name)
 
     train(model, trainer, train_data, val_data, args.epochs, args.resume)
 

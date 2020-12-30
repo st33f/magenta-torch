@@ -38,7 +38,8 @@ class Checkpoint:
     def save(self, experiment_dir, run_name=""):
 
         date_time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
-        self._path = os.path.join(experiment_dir, self.CHECKPOINT_DIR_NAME, run_name + '__' + date_time)
+        name = run_name + '__' + date_time
+        self._path = os.path.join(experiment_dir, self.CHECKPOINT_DIR_NAME, name)
         path = self._path
 
         #If path exists, erase the whole thing nad make a new one.
