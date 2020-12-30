@@ -32,7 +32,7 @@ trainer:
     checkpoint_every: 3000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/mudance'
+    output_dir: 'scratch/outputs/zdance'
     use_danceability: &DA True
     use_fake_data: False
     
