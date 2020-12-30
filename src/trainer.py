@@ -44,7 +44,8 @@ class Trainer:
                  checkpoint_dir='checkpoint',
                  output_dir='outputs',
                  use_danceability=True,
-                 use_fake_data=False):
+                 use_fake_data=False,
+                 run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
         self.free_bits = free_bits
@@ -58,6 +59,7 @@ class Trainer:
         self.output_dir = output_dir
         self.use_danceability = use_danceability
         self.use_fake_data = use_fake_data
+        self.run_name = run_name
 
         
     def inverse_sigmoid(self,step):
@@ -284,7 +286,7 @@ class Trainer:
 
 
                     if iter%self.checkpoint_every == 0:
-                        self.save_checkpoint(model, epoch, iter)
+                        self.save_checkpoint(model, epoch, iter, run_name=self.run_name)
 
                     # plot the pred and targets as pianoroll
                     if iter%self.plot_every == 0:
@@ -399,7 +401,7 @@ class Trainer:
         #torch.save(torch.tensor(train_kl), open('scratch/outputs/train_kl_musicvae_batch', 'wb'))
         #torch.save(torch.tensor(val_kl), open('scratch/outputs/val_kl_musicvae_batch', 'wb'))
         
-    def save_checkpoint(self, model, epoch, iter):
+    def save_checkpoint(self, model, epoch, iter, run_name=''):
         print('Saving checkpoint')
         if self.use_danceability == True:
             model_name = "with_danceablity"
@@ -412,7 +414,7 @@ class Trainer:
                     scheduler=self.scheduler,
                     samp_rate=self.sampling_rate,
                     KL_rate=self.KL_rate,
-                    free_bits=self.free_bits).save(self.output_dir, model_name=model_name)
+                    free_bits=self.free_bits).save(self.output_dir, run_name=run_name)
         print('Checkpoint Successful')
         
     def load_checkpoint(self):

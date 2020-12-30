@@ -166,6 +166,7 @@ def main(args):
     wandb.init(project="master-thesis", config=config)
     wandb.config.update({"epochs": args.epochs, "batch_size": trainer_params['batch_size']})
     wandb.run.summary["On_cluster"] = args.on_cluster
+    trainer_params['run_name'] = wandb.run.name
 
 
     #filepaths, danceability = load_extra_features(args.extra_features)

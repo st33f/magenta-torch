@@ -400,7 +400,7 @@ class ZDanceVAE(nn.Module):
         danceability = da.view(batch_size, 1)
         danceability = danceability.to(device)
         print("da: ", da.size())
-        print("danceabolity: ", danceability.size())
+        print("danceability: ", danceability.size())
         new_z = torch.cat((z, danceability), 1)
 
         print(f"New Z size: {new_z.size()}")
