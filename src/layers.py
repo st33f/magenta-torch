@@ -379,6 +379,8 @@ class HierarchicalGRUDecoder(nn.Module):
         batch_size = h0.size(1)
         out = torch.zeros(self.max_seq_length, batch_size, self.input_size, dtype=torch.float, device=device)
         prev_note = torch.zeros(1, batch_size, self.input_size, dtype=torch.float, device=device)
+        print(latent.size())
+
         for embedding_idx in range(self.num_embeddings):
             embedding, h0 = self.conductor(latent.unsqueeze(0), h0)
             embedding = self.conductor_embeddings(embedding)

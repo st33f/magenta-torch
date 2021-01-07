@@ -534,7 +534,7 @@ def plot_pred_and_target(pred, target, is_eval=True, include_silent_note=False, 
 
     #plt.show()
 
-def plot_spectogram(pred, target, num_plots=1, is_eval=False, iter=None):
+def plot_spectogram(pred, target, num_plots=1, is_eval=False, iter=None, use_teacher_forcing=True):
     print("--- PLOT SPECTORGRAM ---")
     first_target = torch.argmax(target[:, 0, :], dim=1)
     first_pred = pred[:, 0, :].T
@@ -592,9 +592,15 @@ def plot_spectogram(pred, target, num_plots=1, is_eval=False, iter=None):
     #plt.show()
 
     if is_eval:
-        wandb.log({"Eval Spectogram": fig}, step=iter)
+        if use_teacher_forcing:
+            wandb.log({"Eval Spectogram (with teacher forcing)": fig}, step=iter)
+        else:
+            wandb.log({"Eval Spectogram": fig}, step=iter)
     else:
-        wandb.log({"Training Spectogram": fig}, step=iter)
+        if use_teacher_forcing:
+            wandb.log({"Training Spectogram (with teacher forcing)": fig}, step=iter)
+        else:
+            wandb.log({"Training Spectogram": fig}, step=iter)
     plt.close('all')
 
 

@@ -264,7 +264,7 @@ class Trainer:
                         data = torch.unsqueeze(data, dim=1)
                     data = data.to(device)
 
-                    pred_for_viz = self.get_pred_from_data(model, data, da=da)
+                    pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
                     plot_spectogram(pred_for_viz, data, iter=iter)
 
                     if self.use_danceability == True:
@@ -325,8 +325,13 @@ class Trainer:
                             if len(data.size()) < 3:
                                 data = torch.unsqueeze(data, dim=1)
 
-                            pred_for_viz = self.get_pred_from_data(model, data, da=da)
-                            plot_spectogram(pred_for_viz, data, iter=iter, is_eval=True)
+                            pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=False, da=da)
+                            pred_for_viz_tf = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
+
+                            plot_spectogram(pred_for_viz, data, iter=iter, is_eval=True, use_teacher_forcing=False)
+                            plot_spectogram(pred_for_viz_tf, data, iter=iter, is_eval=True, use_teacher_forcing=True)
+
+
 
                             if use_da:
                                 da = da.to(device)
