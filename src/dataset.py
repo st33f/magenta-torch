@@ -65,7 +65,6 @@ class MidiDataset(Dataset):
         # make danceability tensor
         # danceability = torch.tensor(self.danceabilities[idx], dtype=torch.float32)
         if self.danceabilities is not None:
-            print("not none")
             da_tuple = self.danceabilities[song_idx][1]
             danceability = torch.tensor(da_tuple, dtype=torch.float32)
         else:
