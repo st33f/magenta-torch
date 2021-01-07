@@ -192,8 +192,7 @@ class Trainer:
 
     def train_batch(self, iter, model, batch, da=None):
         self.optimizer.zero_grad()
-        #use_teacher_forcing = self.inverse_sigmoid(iter)
-        use_teacher_forcing = False
+        use_teacher_forcing = self.inverse_sigmoid(iter)
         elbo, mean_kl_div, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
@@ -210,13 +209,15 @@ class Trainer:
         if mean_kl_div != 0:
             wandb.log({"train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.cpu(),
                         "training mean KL Div": mean_kl_div.cpu(),
-                        "LR": self.scheduler.get_last_lr()},
+                        "LR": self.scheduler.get_last_lr(),
+                      "Teacher Forcing Probability": use_teacher_forcing},
                       step=iter) #, "Hamming Dist": ham_dist})
         else:
             # send batch loss data to wandb - r_loss only loss function
             wandb.log({"train ELBO (batch avg)": elbo.item(),
                        "training R_loss": r_loss.cpu(),
-                       "LR": self.scheduler.get_last_lr()},
+                       "LR": self.scheduler.get_last_lr(),
+                       "Teacher Forcing Probability": use_teacher_forcing},
                       step=iter)  # , "Hamming Dist": ham_dist})
 
         # log additional metrics
@@ -312,6 +313,7 @@ class Trainer:
 
             if val_data is not None:
                 batch_elbo, batch_kl, batch_r_loss, batch_acc, batch_ham_dist = [], [], [], [], []
+                batch_elbo_tf, batch_kl_tf, batch_r_loss_tf = [], [] ,[]
                 with torch.no_grad():
                     model.eval()
                     with tqdm(total=len(val_data)) as t:
@@ -329,13 +331,21 @@ class Trainer:
                             if use_da:
                                 da = da.to(device)
                                 elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da)
+                                elbo_tf, kl_tf, r_loss_tf, acc_tf, ham_dist_tf = self.compute_loss(iter, model, data, True, da)
                             else:
                                 elbo, kl, r_loss, acc, ham_dist = self.compute_loss(iter, model, data, False, da=None)
+                                elbo_tf, kl_tf, r_loss_tf, acc_tf, ham_dist_tf = self.compute_loss(iter, model, data,
+                                                                                                   True, da=None)
                             batch_elbo.append(elbo)
                             batch_kl.append(kl)
                             batch_r_loss.append(r_loss)
                             batch_acc.append(acc)
                             batch_ham_dist.append(ham_dist)
+
+                            batch_elbo_tf.append(elbo_tf)
+                            batch_kl_tf.append(kl_tf)
+                            batch_r_loss_tf.append(r_loss_tf)
+
                             # tqdm
                             #t.set_postfix(loss=f"Elbo: {elbo}")
                             t.update()
@@ -374,7 +384,11 @@ class Trainer:
                     print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
                     # send batch loss data to wandb
                     # wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
-                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo[-1], "Eval KL Div": val_kl[-1]})
+                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo[-1], "Eval KL Div": val_kl[-1],
+                               "Eval ELBO with TF": torch.mean(torch.tensor(batch_elbo_tf)),
+                               "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
+                               "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf))
+                               })
 
                     # wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
                     wandb.log({"Epoch": epoch, "Eval R_loss": val_r_loss[-1], "Eval Accuracy": eval_acc,

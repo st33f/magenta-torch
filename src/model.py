@@ -422,6 +422,11 @@ class ZDanceVAE(nn.Module):
         out = self.decoder.reconstruct(z, h_dec, temperature)
         return out
 
+    def decode(self, z, batch_size, temperature=1.0):
+        h_dec = self.decoder.init_hidden(batch_size)
+        out = self.decoder.reconstruct(z, h_dec, temperature)
+        return out
+
 class MusicGRUVAE(nn.Module):
     """
     Inputs
