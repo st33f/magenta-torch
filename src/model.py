@@ -427,6 +427,27 @@ class ZDanceVAE(nn.Module):
         out = self.decoder.reconstruct(z, h_dec, temperature)
         return out
 
+    def decode_with_diff_z(self, x, new_z, temperature, da=None, use_teacher_forcing=True):
+        x = x.to(device)
+        batch_size = x.size(1)
+        h_enc = self.encoder.init_hidden(batch_size)
+        mu, sigma = self.encoder(x, h_enc)
+        with torch.no_grad():
+            epsilon = torch.randn_like(mu, device=device)
+        z = self.z_embedding(mu + sigma * epsilon)
+        # concat danceability to Z
+        danceability = da.view(batch_size, 1)
+        danceability = danceability.to(device)
+        new_z = torch.cat((z, danceability), 1)
+        new_z += 1000
+        #new_z = torch.zeros(new_z.size())
+        # indices = torch.randperm(512)
+        # new_z = new_z[:, indices]
+        h_dec = self.decoder.init_hidden(batch_size)
+        #out = self.decoder.reconstruct(new_z, h_dec, temperature)
+        out = self.decoder(x, new_z, h_dec, use_teacher_forcing)
+        return out
+
 class MusicGRUVAE(nn.Module):
     """
     Inputs
@@ -511,6 +532,28 @@ class MusicGRUVAE(nn.Module):
 
         out = self.decoder.reconstruct(z, h_dec, temperature)
         out = self.decoder.reconstruct(z, h_dec.to(device), temperature)
+        return out
+
+    def decode(self, z, batch_size, temperature=1.0):
+        h_dec = self.decoder.init_hidden(batch_size)
+        out = self.decoder.reconstruct(z, h_dec, temperature)
+        return out
+
+    def decode_with_diff_z(self, x, new_z, temperature, da=None, use_teacher_forcing=True):
+        x = x.to(device)
+        batch_size = x.size(1)
+        h_enc = self.encoder.init_hidden(batch_size)
+        mu, sigma = self.encoder(x, h_enc)
+        with torch.no_grad():
+            epsilon = torch.randn_like(mu, device=device)
+        z = self.z_embedding(mu + sigma * epsilon)
+        new_z = z + 1000
+        #new_z = torch.zeros(z.size())
+        # indices = torch.randperm(512)
+        # new_z = z[:, indices]
+        h_dec = self.decoder.init_hidden(batch_size)
+        #out = self.decoder.reconstruct(new_z, h_dec, temperature)
+        out = self.decoder(x, new_z, h_dec, use_teacher_forcing)
         return out
 
 
