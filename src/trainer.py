@@ -395,7 +395,6 @@ class Trainer:
                     # send batch loss data to wandb
                     # wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
                     wandb.log({"Epoch": epoch, "Eval ELBO mean over val set": torch.mean(torch.tensor(batch_loss)).cpu().detach().numpy(),
-                               "Eval ELBO [-1]": val_elbo[-1],
                                "Eval KL Div": val_kl[-1],
                                "Eval ELBO with TF": torch.mean(torch.tensor(batch_elbo_tf)),
                                "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
