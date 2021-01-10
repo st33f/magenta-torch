@@ -120,9 +120,12 @@ class Trainer:
         #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_weight = self.KL_annealing(step, 0, 0.2)
         #elbo = r_loss + kl_weight*kl
-        elbo = r_loss + kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
 
-        kl_cost = kl_weight * torch.max(torch.mean(kl) - self.free_bits, torch.tensor([0], dtype=torch.float, device=device))
+        kl_cost = kl_weight * torch.max(torch.mean(kl) - self.free_bits,
+                                        torch.tensor([0], dtype=torch.float, device=device))
+        elbo = r_loss + kl_cost
+
+
 
         # THIS IS FOR "NO KL VERSION"
         # elbo = r_loss
@@ -264,8 +267,10 @@ class Trainer:
                         data = torch.unsqueeze(data, dim=1)
                     data = data.to(device)
 
-                    pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
-                    plot_spectogram(pred_for_viz, data, iter=iter)
+                    pred_for_viz_tf = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
+                    pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=False, da=da)
+                    plot_spectogram(pred_for_viz_tf, data, iter=iter, use_teacher_forcing=True)
+                    plot_spectogram(pred_for_viz, data, iter=iter, use_teacher_forcing=False)
 
                     if self.use_danceability == True:
                         da = da.to(device)
@@ -291,11 +296,11 @@ class Trainer:
                         self.save_checkpoint(model, epoch, iter, run_name=self.run_name)
 
                     # plot the pred and targets as pianoroll
-                    if iter%self.plot_every == 0:
-                        if use_da:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False, iter=iter)
-                        else:
-                            self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False, iter=iter)
+                    # if iter%self.plot_every == 0:
+                    #     if use_da:
+                    #         self.plot_last_batch(model, data, use_teacher_forcing=False, da=da, num_plots=1, is_eval=False, iter=iter)
+                    #     else:
+                    #         self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False, iter=iter)
 
 
                     # tqdm
@@ -389,7 +394,9 @@ class Trainer:
                     print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
                     # send batch loss data to wandb
                     # wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
-                    wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo[-1], "Eval KL Div": val_kl[-1],
+                    wandb.log({"Epoch": epoch, "Eval ELBO mean over val set": torch.mean(torch.tensor(batch_loss)).cpu().detach().numpy(),
+                               "Eval ELBO [-1]": val_elbo[-1],
+                               "Eval KL Div": val_kl[-1],
                                "Eval ELBO with TF": torch.mean(torch.tensor(batch_elbo_tf)),
                                "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
                                "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf))
