@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.distributions.categorical import Categorical
+import random
 
 import wandb
 
@@ -353,7 +354,8 @@ class HierarchicalGRUDecoder(nn.Module):
             # for each subsequence where at each step the current
             # conductor embedding is concatenated with the previous output
             # token to be used as input
-            if use_teacher_forcing:
+            #if use_teacher_forcing:
+            if random.random() < use_teacher_forcing:
                 embedding = embedding.expand(self.seq_length, batch_size, embedding.size(2)).to(device)
                 idx = range(embedding_idx * self.seq_length, embedding_idx * self.seq_length + self.seq_length)
                 e = torch.cat((target[idx, :, :], embedding), dim=2)
