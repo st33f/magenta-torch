@@ -35,6 +35,7 @@ class Trainer:
     def __init__(self, 
                  learning_rate=1e-3,
                  KL_rate=0.9999,
+                 KL_end=0.2,
                  free_bits=256,
                  sampling_rate=2000,
                  batch_size=512, 
@@ -48,6 +49,7 @@ class Trainer:
                  run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
+        self.KL_end = KL_end
         self.free_bits = free_bits
         self.optimizer=None
         self.scheduler=None
@@ -118,7 +120,7 @@ class Trainer:
         r_loss, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
         # newer ELBO
         #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
-        kl_weight = self.KL_annealing(step, 0, 0.2)
+        kl_weight = self.KL_annealing(step, 0, self.KL_end)
         #elbo = r_loss + kl_weight*kl
 
         kl_cost = kl_weight * torch.max(torch.mean(kl) - self.free_bits,
