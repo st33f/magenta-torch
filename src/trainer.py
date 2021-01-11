@@ -245,6 +245,12 @@ class Trainer:
         print(f"Val data batches: {len(val_data)}")
         print()
 
+        # init results dict
+        results = dict()
+
+        results['n_training_batches'] = len(train_data)
+        results['n_evaluation_batches'] = len(val_data)
+
         for epoch in range(start_epoch, end_epoch):
 
             batch_loss, batch_kl = [], []
@@ -253,9 +259,8 @@ class Trainer:
                     model.train()
                     # save the randomly initialized model right away
                     #self.save_checkpoint(model, epoch, iter)
-
-                    # init results dict
-                    results = dict()
+                    for k, v in results.items():
+                        print(k, v)
 
                     # first, get data AND danceability from the dataset
                     data, da = batch
@@ -308,11 +313,12 @@ class Trainer:
                     t.update()
 
 
-            train_loss.append(torch.mean(torch.tensor(batch_loss)))
-            train_kl.append(torch.mean(torch.tensor(batch_kl)))
-            
-            #self.save_checkpoint(model, epoch, iter)
+            # train_loss.append(torch.mean(torch.tensor(batch_loss)))
+            # train_kl.append(torch.mean(torch.tensor(batch_kl)))
 
+            # add results of epoch to results dict
+            results[f"train_ELBO_e{epoch}"] = batch_loss
+            results[f"train_KL_e{epoch}"] = batch_kl
 
             print("\n\n\n ---- Validation starting...")
 
@@ -333,8 +339,8 @@ class Trainer:
                             pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=False, da=da)
                             pred_for_viz_tf = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
 
-                            plot_spectogram(pred_for_viz, data, iter=iter, is_eval=True, use_teacher_forcing=False, num_plots=32)
-                            plot_spectogram(pred_for_viz_tf, data, iter=iter, is_eval=True, use_teacher_forcing=True)
+                            plot_spectogram(pred_for_viz, data, iter=None, is_eval=True, use_teacher_forcing=False, num_plots=32)
+                            plot_spectogram(pred_for_viz_tf, data, iter=None, is_eval=True, use_teacher_forcing=True, num_plots=32)
 
 
 
@@ -361,58 +367,65 @@ class Trainer:
                             t.update()
 
                             # plot the pred and targets as pianoroll
-                            if idx == len(val_data) - 1:
-                                if use_da:
-                                    self.plot_last_batch(model, data, use_teacher_forcing=False, da=da)
-                                else:
-                                    self.plot_last_batch(model, data, use_teacher_forcing=False, da=None)
+                            # if idx == len(val_data) - 1:
+                            #     if use_da:
+                            #         self.plot_last_batch(model, data, use_teacher_forcing=False, da=da)
+                            #     else:
+                            #         self.plot_last_batch(model, data, use_teacher_forcing=False, da=None)
 
-                        print("Batch R loss")
-                        print(batch_r_loss)
-                        print("batch ELBO")
-                        print(batch_elbo)
-                        print(batch_loss)
-                        print(batch_kl)
-                        print(batch_acc)
+                        # print("Batch R loss")
+                        # print(batch_r_loss)
+                        # print("batch ELBO")
+                        # print(batch_elbo)
+                        # print(batch_loss)
+                        # print(batch_kl)
+                        # print(batch_acc)
 
                         # get avg values for validation dataset
-                        val_elbo.append(torch.mean(torch.tensor(batch_loss)))
-                        val_kl.append(torch.mean(torch.tensor(batch_kl)))
-                        val_r_loss.append(torch.mean(torch.tensor(batch_r_loss)))
-                        val_acc.append(torch.mean(torch.tensor(batch_acc)))
-                        val_ham_dist.append(torch.mean(torch.tensor(batch_ham_dist)))
+                        # val_elbo.append(torch.mean(torch.tensor(batch_loss)))
+                        # val_kl.append(torch.mean(torch.tensor(batch_kl)))
+                        # val_r_loss.append(torch.mean(torch.tensor(batch_r_loss)))
+                        # val_acc.append(torch.mean(torch.tensor(batch_acc)))
+                        # val_ham_dist.append(torch.mean(torch.tensor(batch_ham_dist)))
 
-                    #val_elbo_avg = torch.mean(torch.tensor(val_elbo))
-                    val_elbo_avg = sum(val_elbo) / len(val_elbo)
-                    #div = torch.mean(torch.tensor(val_kl))
-                    div = sum(val_kl) / len(val_kl)
-                    # eval_r_loss = sum(val_r_loss) / len(val_r_loss)
-                    eval_r_loss = torch.mean(torch.tensor(batch_r_loss))
-                    eval_acc = torch.mean(torch.tensor(val_acc))
-                    eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
+                    val_elbo_avg = torch.mean(torch.tensor(batch_elbo))
+                    val_div_avg = torch.mean(torch.tensor(batch_kl))
+                    # val_elbo_avg = sum(val_elbo) / len(val_elbo)
+                    # #div = torch.mean(torch.tensor(val_kl))
+
+                    # # eval_r_loss = sum(val_r_loss) / len(val_r_loss)
+                    # # eval_r_loss = torch.mean(torch.tensor(batch_r_loss))
+                    # eval_acc = torch.mean(torch.tensor(val_acc))
+                    # eval_ham_dist = torch.mean(torch.tensor(val_ham_dist))
                     print('----------Validation')
-                    print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg, div))
+                    print('Epoch: %d, iteration: %d, Average loss: %.4f, KL Divergence: %.4f' % (epoch, iter, val_elbo_avg.item(), val_div_avg.item()))
                     # send batch loss data to wandb
                     # wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
-                    wandb.log({"Epoch": epoch, "Eval ELBO mean over val set": torch.mean(torch.tensor(batch_loss)).cpu().detach().numpy(),
-                               "Eval KL Div": val_kl[-1],
+                    wandb.log({"Epoch": epoch, "Eval ELBO mean over val set": torch.mean(torch.tensor(batch_elbo)).cpu().detach().numpy(),
+                               "Eval KL Div": torch.mean(torch.tensor(batch_kl)),
+                               "Eval R_loss": torch.mean(torch.tensor(batch_r_loss)),
                                "Eval ELBO with TF": torch.mean(torch.tensor(batch_elbo_tf)),
                                "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
                                "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf))
                                })
 
                     # wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
-                    wandb.log({"Epoch": epoch, "Eval R_loss": val_r_loss[-1], "Eval Accuracy": eval_acc,
-                               "Eval Hamming Dist": eval_ham_dist})
+                    #wandb.log({"Epoch": epoch, "Eval Accuracy": eval_acc, "Eval Hamming Dist": eval_ham_dist})
 
+                    # add results of epoch to results dict
+                    results[f"val_ELBO_e{epoch}"] = batch_elbo
+                    results[f"val_KL_e{epoch}"] = batch_kl
 
 
         print("Final results:")
-        print(train_loss)
-        print(train_kl)
-        print()
-        print(val_elbo)
-        print(val_kl)
+        # print(train_loss)
+        # print(train_kl)
+        # print()
+        # print(val_elbo)
+        # print(val_kl)
+        for k, v in results.items():
+            print(k, v)
+
 
         # send batch loss data to wandb
         #wandb.log({"Final training ELBOs": train_loss, "final train KL": train_kl, "Final val ELBOs": val_loss, "Final val KL": val_kl})
