@@ -26,8 +26,8 @@ trainer:
     learning_rate: 0.0005 #0.001
     KL_rate: 0.9999
     free_bits: 256
-    sampling_rate: 400 #2000
-    batch_size: &batchsize 32
+    sampling_rate: 500 #2000
+    batch_size: &batchsize 50
     print_every: 1
     checkpoint_every: 3000
     plot_every: 1
