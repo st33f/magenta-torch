@@ -112,7 +112,7 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
         #print(f"last_song_id: {last_song_id}")
 
         # print(train_data.song_to_idx)
-        train_data_subset = Subset(train_data, list(range(10000)))
+        train_data_subset = Subset(train_data, list(range(7000)))
         train_loader = DataLoader(train_data_subset, batch_size=batch_size, shuffle=False)
         print(f"Len train loader: {len(train_loader)}")
         #train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
@@ -125,7 +125,7 @@ def load_data(train_data, val_data, batch_size, validation_split=0.2, random_see
     if val_data != '':
         X_val = pickle.load(open(val_data, 'rb'))
         val_data = MidiDataset(X_val, song_paths=val_paths, danceability=val_ef)
-        val_data_subset = Subset(train_data, list(range(2000)))
+        val_data_subset = Subset(train_data, list(range(3000)))
         val_loader = DataLoader(val_data_subset, batch_size=batch_size, shuffle=False)
         #val_loader = DataLoader(val_data, batch_size=batch_size, shuffle=True)
         print(' --- val data summary --- ')
