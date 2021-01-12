@@ -355,22 +355,43 @@ class HierarchicalGRUDecoder(nn.Module):
             # conductor embedding is concatenated with the previous output
             # token to be used as input
             #if use_teacher_forcing:
-            if random.random() < use_teacher_forcing:
-                embedding = embedding.expand(self.seq_length, batch_size, embedding.size(2)).to(device)
-                idx = range(embedding_idx * self.seq_length, embedding_idx * self.seq_length + self.seq_length)
-                e = torch.cat((target[idx, :, :], embedding), dim=2)
-                prev_note, h0_dec = self.gru(e, h0_dec)
-                prev_note = self.out(prev_note)
-                out[idx, :, :] = prev_note
-                prev_note = prev_note[-1, :, :].unsqueeze(0)
-            else:
-                for note_idx in range(self.seq_length):
-                    e = torch.cat((prev_note, embedding), -1)
-                    prev_note, h0_dec = self.gru(e, h0_dec)
-                    prev_note = self.out(prev_note)
 
-                    idx = embedding_idx * self.seq_length + note_idx
-                    out[idx, :, :] = prev_note.squeeze()
+            # if random.random() < use_teacher_forcing:
+            #     embedding = embedding.expand(self.seq_length, batch_size, embedding.size(2)).to(device)
+            #     idx = range(embedding_idx * self.seq_length, embedding_idx * self.seq_length + self.seq_length)
+            #     e = torch.cat((target[idx, :, :], embedding), dim=2)
+            #
+            #     print(f"E size with TF: {e.size()}")
+            #
+            #     prev_note, h0_dec = self.gru(e, h0_dec)
+            #     prev_note = self.out(prev_note)
+            #     out[idx, :, :] = prev_note
+            #     prev_note = prev_note[-1, :, :].unsqueeze(0)
+            # else:
+            #     for note_idx in range(self.seq_length):
+            #         e = torch.cat((prev_note, embedding), -1)
+            #         print(f"E size without TF: {e.size()}")
+            #         prev_note, h0_dec = self.gru(e, h0_dec)
+            #         prev_note = self.out(prev_note)
+            #
+            #         idx = embedding_idx * self.seq_length + note_idx
+            #         # if tf:
+            #         #   prev
+            #         out[idx, :, :] = prev_note.squeeze()
+
+            for note_idx in range(self.seq_length):
+                e = torch.cat((prev_note, embedding), -1)
+                print(f"E size: {e.size()}")
+                prev_note, h0_dec = self.gru(e, h0_dec)
+
+                idx = embedding_idx * self.seq_length + note_idx
+                prev_note = self.out(prev_note)
+                out[idx, :, :] = prev_note.squeeze()
+
+                if random.random() < use_teacher_forcing:
+                    print("using TF")
+                    prev_note = target[idx, :, :].unsqueeze(0)
+
         return out
     
     def reconstruct(self, latent, h0, temperature):

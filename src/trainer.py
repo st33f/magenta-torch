@@ -261,8 +261,6 @@ class Trainer:
                     model.train()
                     # save the randomly initialized model right away
                     #self.save_checkpoint(model, epoch, iter)
-                    for k, v in results.items():
-                        print(k, v)
 
                     # first, get data AND danceability from the dataset
                     data, da = batch
