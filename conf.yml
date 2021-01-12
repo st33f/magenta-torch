@@ -28,7 +28,7 @@ trainer:
     KL_end: 0.2
     free_bits: 256
     sampling_rate: 2000 #2000
-    batch_size: &batchsize 50
+    batch_size: &batchsize 64
     print_every: 1
     checkpoint_every: 3000
     plot_every: 1
@@ -37,6 +37,7 @@ trainer:
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
+    scale_tf: 0.98
     
 sampler:
     free_bits: 256
@@ -50,7 +51,7 @@ model:
     decoder_input_size: 61
     encoder_hidden_size: 2048
     decoder_hidden_size: 1024
-    latent_dim: 64
+    latent_dim: 256
     encoder_num_layers: 2
     decoder_num_layers: 2
     use_danceability: *DA

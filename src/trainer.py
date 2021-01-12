@@ -47,6 +47,7 @@ class Trainer:
                  use_danceability=True,
                  use_fake_data=False,
                  use_grad_clip=False,
+                 scale_tf=1.,
                  run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
@@ -64,6 +65,7 @@ class Trainer:
         self.use_fake_data = use_fake_data
         self.run_name = run_name
         self.use_grad_clip = use_grad_clip
+        self.scale_tf = scale_tf
 
         
     def inverse_sigmoid(self,step):
@@ -75,7 +77,7 @@ class Trainer:
             return 0
         if k == 1.0:
             return 1
-        return k/(k + exp(step/k))
+        return k/(k + exp(step/k)) * self.scale_tf
         
     def KL_annealing(self, step, start, end):
         return end + (start - end)*(self.KL_rate)**step
