@@ -25,7 +25,7 @@ preprocessor:
 trainer:
     learning_rate: 0.0005 #0.001
     KL_rate: 0.9999
-    KL_end: 0.0
+    KL_end: 0.2
     free_bits: 256
     sampling_rate: 10000 #2000
     batch_size: &batchsize 50
@@ -36,6 +36,7 @@ trainer:
     output_dir: 'scratch/outputs/baseline'
     use_danceability: &DA False
     use_fake_data: False
+    use_grad_clip: True
     
 sampler:
     free_bits: 256

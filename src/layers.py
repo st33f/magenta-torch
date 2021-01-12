@@ -381,7 +381,7 @@ class HierarchicalGRUDecoder(nn.Module):
 
             for note_idx in range(self.seq_length):
                 e = torch.cat((prev_note, embedding), -1)
-                print(f"E size: {e.size()}")
+                # print(f"E size: {e.size()}")
                 prev_note, h0_dec = self.gru(e, h0_dec)
 
                 idx = embedding_idx * self.seq_length + note_idx
@@ -389,7 +389,7 @@ class HierarchicalGRUDecoder(nn.Module):
                 out[idx, :, :] = prev_note.squeeze()
 
                 if random.random() < use_teacher_forcing:
-                    print("using TF")
+                    # print("using TF")
                     prev_note = target[idx, :, :].unsqueeze(0)
 
         return out

@@ -46,6 +46,7 @@ class Trainer:
                  output_dir='outputs',
                  use_danceability=True,
                  use_fake_data=False,
+                 use_grad_clip=False,
                  run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
@@ -62,6 +63,7 @@ class Trainer:
         self.use_danceability = use_danceability
         self.use_fake_data = use_fake_data
         self.run_name = run_name
+        self.use_grad_clip = use_grad_clip
 
         
     def inverse_sigmoid(self,step):
@@ -206,6 +208,10 @@ class Trainer:
 
         #print(f"elbo train batch: {elbo}")
         elbo.backward()
+
+        if self.use_grad_clip:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 50)
+
         self.optimizer.step()
         self.scheduler.step()
         #print(f"elbo train batch: {elbo}")
