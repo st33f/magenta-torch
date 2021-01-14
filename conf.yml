@@ -27,7 +27,7 @@ trainer:
     KL_rate: 0.9999
     KL_end: 0.2
     free_bits: 256
-    sampling_rate: 700 #2000
+    sampling_rate: 1000 #2000
     batch_size: &batchsize 32
     print_every: 1
     checkpoint_every: 3000
