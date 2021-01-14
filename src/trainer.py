@@ -48,6 +48,8 @@ class Trainer:
                  use_fake_data=False,
                  use_grad_clip=False,
                  scale_tf=1.,
+                 use_regularizer=False,
+                 regularizer_weight=0.1,
                  run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
@@ -66,6 +68,8 @@ class Trainer:
         self.run_name = run_name
         self.use_grad_clip = use_grad_clip
         self.scale_tf = scale_tf
+        self.use_regularizer = use_regularizer
+        self.regularizer_weight = regularizer_weight
 
         
     def inverse_sigmoid(self,step):
@@ -77,7 +81,7 @@ class Trainer:
             return 0
         if k == 1.0:
             return 1
-        return k/(k + exp(step/k)) * self.scale_tf
+        return (k/(k + exp(step/k))) * self.scale_tf
         
     def KL_annealing(self, step, start, end):
         return end + (start - end)*(self.KL_rate)**step
@@ -118,20 +122,25 @@ class Trainer:
 
     def compute_loss(self, step, model, batch, use_teacher_forcing=True, da=None):
         batch.to(device)
+        kl_weight = self.KL_annealing(step, 0, self.KL_end)
         pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
 
-        # Old ELBO's
-        r_loss, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
-        # newer ELBO
-        #r_loss, kl_cost, kl_div, ham_dist, acc = custom_ELBO(pred, batch, mu, sigma, self.free_bits)
-        kl_weight = self.KL_annealing(step, 0, self.KL_end)
-        #elbo = r_loss + kl_weight*kl
+        # get regularizer loss without TF
+        pred_no_tf, mu_no_tf, sigma_no_tf, z_no_tf = model(batch, False, da)
+        r_loss_no_tf, kl_no_tf = ELBO(pred_no_tf, batch, mu_no_tf, sigma_no_tf, self.free_bits)
+        kl_cost_no_tf = kl_weight * torch.max(torch.mean(kl_no_tf) - self.free_bits,
+                                              torch.tensor([0], dtype=torch.float, device=device))
+        no_tf_ELBO = r_loss_no_tf + kl_cost_no_tf
 
+
+        #ELBO
+        r_loss, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
         kl_cost = kl_weight * torch.max(torch.mean(kl) - self.free_bits,
                                         torch.tensor([0], dtype=torch.float, device=device))
         elbo = r_loss + kl_cost
 
-
+        if self.use_regularizer:
+            elbo += self.regularizer_weight * no_tf_ELBO
 
         # THIS IS FOR "NO KL VERSION"
         # elbo = r_loss
@@ -148,8 +157,14 @@ class Trainer:
         #return kl_weight*elbo, kl
         wandb.log({"Z": wandb.Histogram(z.cpu().detach().numpy()), "mu": wandb.Histogram(mu.cpu().detach().numpy()),
                    "sigma": wandb.Histogram(sigma.cpu().detach().numpy()),
-                   "KL Weight": kl_weight, "Pred": wandb.Histogram(pred.cpu().detach().numpy()),
-                   "kl cost": kl_cost.cpu()},
+                   "KL Weight": kl_weight, #"Pred": wandb.Histogram(pred.cpu().detach().numpy()),
+                   "kl cost": kl_cost.cpu(),
+                  "Z w/o TF": wandb.Histogram(z_no_tf.cpu().detach().numpy()), "mu w/o TF": wandb.Histogram(mu_no_tf.cpu().detach().numpy()),
+                   "sigma w/o TF": wandb.Histogram(sigma_no_tf.cpu().detach().numpy()),
+                   "kl cost w/o TF": kl_cost_no_tf.cpu(),
+                   "train ELBO w/o TF": no_tf_ELBO.item(), "training R_loss w/o TF": r_loss_no_tf.cpu(),
+                   "training KL Div w/o TF": kl_no_tf.cpu(),
+                   },
                    step=step)
         acc = 0.
         ham_dist = 0.
