@@ -38,8 +38,8 @@ trainer:
     use_fake_data: False
     use_grad_clip: True
     scale_tf: .8
-    use_regularizer: False
-    regularizer_weight: 0.5
+    use_regularizer: True
+    regularizer_weight: 0.2
     
 sampler:
     free_bits: 256
