@@ -50,6 +50,7 @@ class Trainer:
                  scale_tf=1.,
                  use_regularizer=False,
                  regularizer_weight=0.1,
+                 use_target_smoothing=True,
                  run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
@@ -70,6 +71,7 @@ class Trainer:
         self.scale_tf = scale_tf
         self.use_regularizer = use_regularizer
         self.regularizer_weight = regularizer_weight
+        self.use_target_smoothing = use_target_smoothing
 
         
     def inverse_sigmoid(self,step):
@@ -127,14 +129,14 @@ class Trainer:
 
         # get regularizer loss without TF
         pred_no_tf, mu_no_tf, sigma_no_tf, z_no_tf = model(batch, False, da)
-        r_loss_no_tf, kl_no_tf = ELBO(pred_no_tf, batch, mu_no_tf, sigma_no_tf, self.free_bits)
+        r_loss_no_tf, kl_no_tf = ELBO(pred_no_tf, batch, mu_no_tf, sigma_no_tf, self.free_bits, use_target_smoothing=self.use_target_smoothing)
         kl_cost_no_tf = kl_weight * torch.max(torch.mean(kl_no_tf) - self.free_bits,
                                               torch.tensor([0], dtype=torch.float, device=device))
         no_tf_ELBO = r_loss_no_tf + kl_cost_no_tf
 
 
         #ELBO
-        r_loss, kl = ELBO(pred, batch, mu, sigma, self.free_bits)
+        r_loss, kl = ELBO(pred, batch, mu, sigma, self.free_bits, use_target_smoothing=self.use_target_smoothing)
         kl_cost = kl_weight * torch.max(torch.mean(kl) - self.free_bits,
                                         torch.tensor([0], dtype=torch.float, device=device))
         elbo = r_loss + kl_cost

@@ -1,5 +1,5 @@
 import torch
-from torch.nn.functional import binary_cross_entropy, binary_cross_entropy_with_logits, cross_entropy, mse_loss
+from torch.nn.functional import binary_cross_entropy, binary_cross_entropy_with_logits, cross_entropy, mse_loss, softmax
 from torch.distributions.normal import Normal
 from torch.distributions.kl import kl_divergence
 import numpy as np
@@ -14,13 +14,23 @@ def hamming_distance(s1, s2) -> int:
         raise ValueError("Undefined for sequences of unequal length.")
     return sum(el1 != el2 for el1, el2 in zip(s1, s2))
 
-def ELBO(pred, target, mu, log_var, free_bits):
+def ELBO(pred, target, mu, log_var, free_bits, use_target_smoothing=True, alpha=5):
     """
     Evidence Lower Bound
     Return KL Divergence and KL Regularization using free bits
     """
     device = pred.device
     # Reconstruction error
+    # If target smoothing, softmax the one hot target to smooth the values
+    if use_target_smoothing:
+        smooth_target = softmax(alpha * target, dim=2)
+        target = smooth_target
+        # torch.set_printoptions(profile="full")
+        # print(target[1,0,:])
+        # print(smooth_target[1,0,:])
+        # torch.set_printoptions(profile="default")
+
+
     # Pytorch cross_entropy combines LogSoftmax and NLLLoss
     likelihood = -binary_cross_entropy(pred, target, reduction='sum')
     print()
