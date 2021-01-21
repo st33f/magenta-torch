@@ -33,7 +33,7 @@ trainer:
     checkpoint_every: 5000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/baseline_gru_dropout'
+    output_dir: 'scratch/outputs/baseline_lstm_dropout'
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
