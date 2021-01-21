@@ -283,7 +283,10 @@ class Trainer:
         results['n_evaluation_batches'] = len(val_data)
 
         for epoch in range(start_epoch, end_epoch):
-            plot_weights(model.decoder.gru.weight_ih_l0.abs().cpu().detach().numpy(), iter)
+            try:
+                plot_weights(model.decoder.gru.weight_ih_l0.abs().cpu().detach().numpy(), iter)
+            except:
+                plot_weights(model.decoder.lstm.weight_ih_l0.abs().cpu().detach().numpy(), iter)
             batch_loss, batch_kl = [], []
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
@@ -438,7 +441,6 @@ class Trainer:
                                "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
                                "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf))
                                })
-                    plot_weights(model.decoder.gru.weight_ih_l0.abs().cpu().detach().numpy(), iter)
                     # wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
                     #wandb.log({"Epoch": epoch, "Eval Accuracy": eval_acc, "Eval Hamming Dist": eval_ham_dist})
 
