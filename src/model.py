@@ -44,8 +44,10 @@ class MusicLSTMVAE(nn.Module):
                  decoder_hidden_size=1024, 
                  latent_dim=512, 
                  encoder_num_layers=2, 
-                 decoder_num_layers=2):
+                 decoder_num_layers=2,
+                 use_danceability=False):
         super(MusicLSTMVAE, self).__init__()
+        self.use_danceability = use_danceability
         self.input_size = decoder_input_size
         self.max_sequence_length = max_sequence_length
         self.encoder = BiLSTMEncoder(encoder_input_size, 
@@ -64,7 +66,7 @@ class MusicLSTMVAE(nn.Module):
                                            max_seq_length=max_sequence_length,
                                            seq_length=sequence_length)
 
-    def forward(self, x, use_teacher_forcing):
+    def forward(self, x, use_teacher_forcing, da):
         """
         Input
         - x: input sequence x = x_1, ... ,x_T
