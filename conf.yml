@@ -27,20 +27,20 @@ trainer:
     KL_rate: 0.9999
     KL_end: 0.2
     free_bits: 256
-    sampling_rate: 800 #2000
+    sampling_rate: 700 #2000
     batch_size: &batchsize 32
     print_every: 1
     checkpoint_every: 5000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/baseline_target_smoothing'
+    output_dir: 'scratch/outputs/baseline_fake_data'
     use_danceability: &DA False
-    use_fake_data: False
+    use_fake_data: True
     use_grad_clip: True
     scale_tf: .9
     use_regularizer: False
     regularizer_weight: 0.2
-    use_target_smoothing: True
+    use_target_smoothing: False
     
 sampler:
     free_bits: 256

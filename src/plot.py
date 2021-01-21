@@ -591,7 +591,7 @@ def plot_spectogram(pred, target, num_plots=5, is_eval=False, iter=None, use_tea
             fig.colorbar(im, ax=ax)
             # im.set_clim(0, 1)
 
-            #plt.show()
+            # plt.show()
 
             if is_eval:
                 if use_teacher_forcing:

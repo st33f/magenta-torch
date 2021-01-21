@@ -2,6 +2,7 @@ import numpy
 import pickle
 import torch
 import numpy as np
+from src.plot import plot_spectogram
 '''
 train_data = "/Users/stefanwijtsma/code/magenta-torch/pickle_data/clean_midi_2_small/X_train.pickle"
 X_train = pickle.load(open(train_data, 'rb'))
@@ -28,9 +29,9 @@ def generate_fake_songs(num_batches, num_songs):
 
     song = []
     class_count = 61
+    note_count = 0
 
     for number in range(num_batches):
-        note_count = 0
         section = []
         for i in range(256):
             steplist = [0.] * 61
@@ -45,12 +46,12 @@ def generate_fake_songs(num_batches, num_songs):
                 note_count += 1
 
         song.append(section)
-
     return [np.array(song)] * num_songs
 
 # song = generate_fake_songs(38, 172)
 #
-# #print(song)
+# print(song)
+# plot_spectogram(song, song)
 # print()
 #
 # print(len(song))
