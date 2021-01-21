@@ -51,6 +51,7 @@ class Trainer:
                  use_regularizer=False,
                  regularizer_weight=0.1,
                  use_target_smoothing=True,
+                 fixed_tf_prob=0.5,
                  run_name=""):
         self.learning_rate = learning_rate
         self.KL_rate = KL_rate
@@ -72,12 +73,15 @@ class Trainer:
         self.use_regularizer = use_regularizer
         self.regularizer_weight = regularizer_weight
         self.use_target_smoothing = use_target_smoothing
+        self.fixed_tf_prob = fixed_tf_prob
 
         
     def inverse_sigmoid(self,step):
         """
         Compute teacher forcing probability with inverse sigmoid
         """
+        if self.fixed_tf_prob:
+            return self.fixed_tf_prob
         k = self.sampling_rate
         if k == None:
             return 0
