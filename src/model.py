@@ -474,7 +474,8 @@ class MusicGRUVAE(nn.Module):
                  latent_dim=512,
                  encoder_num_layers=2,
                  decoder_num_layers=2,
-                 use_danceability=False):
+                 use_danceability=False,
+                 dropout_p=0.5):
         super(MusicGRUVAE, self).__init__()
         self.input_size = decoder_input_size
         self.max_sequence_length = max_sequence_length
@@ -492,7 +493,8 @@ class MusicGRUVAE(nn.Module):
                                               latent_size=latent_dim,
                                               num_layers=decoder_num_layers,
                                               max_seq_length=max_sequence_length,
-                                              seq_length=sequence_length)
+                                              seq_length=sequence_length,
+                                              dropout_p=dropout_p)
 
     def forward(self, x, use_teacher_forcing, da=None):
         """

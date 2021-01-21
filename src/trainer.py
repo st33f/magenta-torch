@@ -1,6 +1,6 @@
 from src.checkpoint import Checkpoint
 from src.loss import ELBO, custom_ELBO, flat_ELBO, only_r_loss, new_ELBO_loss
-from src.plot import plot_pred_and_target, plot_spectogram
+from src.plot import plot_pred_and_target, plot_spectogram, plot_weights
 
 import torch
 import torch.optim as optim
@@ -291,6 +291,8 @@ class Trainer:
                     # save the randomly initialized model right away
                     #self.save_checkpoint(model, epoch, iter)
 
+                    plot_weights(model.decoder.gru.weight_ih_l0.abs().detach().numpy(), iter)
+
                     # first, get data AND danceability from the dataset
                     data, da = batch
                     # get batch dim in middle
@@ -437,7 +439,7 @@ class Trainer:
                                "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
                                "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf))
                                })
-
+                    plot_weights(model.decoder.gru.weight_ih_l0.abs().detach().numpy(), iter)
                     # wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
                     #wandb.log({"Epoch": epoch, "Eval Accuracy": eval_acc, "Eval Hamming Dist": eval_ham_dist})
 

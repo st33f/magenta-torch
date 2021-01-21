@@ -312,7 +312,8 @@ class HierarchicalGRUDecoder(nn.Module):
                  latent_size=512,
                  num_layers=2,
                  max_seq_length=256,
-                 seq_length=16):
+                 seq_length=16,
+                 dropout_p=.5):
         super(HierarchicalGRUDecoder, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -321,12 +322,16 @@ class HierarchicalGRUDecoder(nn.Module):
         self.max_seq_length = max_seq_length
         self.seq_length = seq_length
         self.num_layers = num_layers
+        self.dropout_p = dropout_p
+
 
         self.tanh = nn.Tanh()
         self.conductor = nn.GRU(input_size=latent_size, hidden_size=hidden_size, num_layers=num_layers)
         self.conductor_embeddings = nn.Sequential(
             nn.Linear(in_features=hidden_size, out_features=latent_size),
             nn.Tanh())
+        # Add dropout
+        self.dropout = nn.Dropout(p=self.dropout_p, inplace=True)
         self.gru = nn.GRU(input_size=input_size + latent_size, hidden_size=hidden_size, num_layers=num_layers)
         self.out = nn.Sequential(
             nn.Linear(in_features=hidden_size, out_features=input_size),
@@ -382,6 +387,10 @@ class HierarchicalGRUDecoder(nn.Module):
             for note_idx in range(self.seq_length):
                 e = torch.cat((prev_note, embedding), -1)
                 # print(f"E size: {e.size()}")
+
+                # Apply Dropout
+                self.dropout(e)
+
                 prev_note, h0_dec = self.gru(e, h0_dec)
 
                 idx = embedding_idx * self.seq_length + note_idx

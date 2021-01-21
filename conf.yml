@@ -33,7 +33,7 @@ trainer:
     checkpoint_every: 5000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/baseline_fixed_tf_prob'
+    output_dir: 'scratch/outputs/baseline_gru_dropout'
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
@@ -41,7 +41,7 @@ trainer:
     use_regularizer: False
     regularizer_weight: 0.2
     use_target_smoothing: False
-    fixed_tf_prob: 0.5
+    fixed_tf_prob: False
     
 sampler:
     free_bits: 256
@@ -59,6 +59,7 @@ model:
     encoder_num_layers: 2
     decoder_num_layers: 2
     use_danceability: *DA
+    dropout_p: .5
 
 data: # Specify paths to data
     train_data: '/Users/stefanwijtsma/code/magenta-torch/clean/clean_midi_1/X_train.pickle'
