@@ -45,7 +45,8 @@ class MusicLSTMVAE(nn.Module):
                  latent_dim=512, 
                  encoder_num_layers=2, 
                  decoder_num_layers=2,
-                 use_danceability=False):
+                 use_danceability=False,
+                 dropout_p=.5):
         super(MusicLSTMVAE, self).__init__()
         self.use_danceability = use_danceability
         self.input_size = decoder_input_size
@@ -64,7 +65,8 @@ class MusicLSTMVAE(nn.Module):
                                            latent_size=latent_dim, 
                                            num_layers=decoder_num_layers, 
                                            max_seq_length=max_sequence_length,
-                                           seq_length=sequence_length)
+                                           seq_length=sequence_length,
+                                            dropout_p=dropout_p)
 
     def forward(self, x, use_teacher_forcing, da):
         """
