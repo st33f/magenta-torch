@@ -25,19 +25,19 @@ preprocessor:
 trainer:
     learning_rate: 0.0005 #0.001
     KL_rate: 0.9999
-    KL_end: 0.2
+    KL_end: 0.0
     free_bits: 256
-    sampling_rate: 700 #2000
+    sampling_rate: 500 #2000
     batch_size: &batchsize 32
     print_every: 1
     checkpoint_every: 5000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/baseline_lstm_dropout'
+    output_dir: 'scratch/outputs/baseline_fixed-sig'
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
-    scale_tf: .9
+    scale_tf: .95
     use_regularizer: False
     regularizer_weight: 0.2
     use_target_smoothing: False
@@ -59,7 +59,7 @@ model:
     encoder_num_layers: 2
     decoder_num_layers: 2
     use_danceability: *DA
-    dropout_p: .5
+    dropout_p: .2
 
 data: # Specify paths to data
     train_data: '/Users/stefanwijtsma/code/magenta-torch/clean/clean_midi_1/X_train.pickle'

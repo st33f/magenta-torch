@@ -390,11 +390,11 @@ class HierarchicalGRUDecoder(nn.Module):
             #         out[idx, :, :] = prev_note.squeeze()
 
             for note_idx in range(self.seq_length):
-                # Apply Dropout
-                self.dropout(prev_note)
+
                 e = torch.cat((prev_note, embedding), -1)
                 # print(f"E size: {e.size()}")
-
+                # Apply Dropout
+                self.dropout(e)
 
 
                 prev_note, h0_dec = self.gru(e, h0_dec)
