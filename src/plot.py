@@ -608,12 +608,12 @@ def plot_spectogram(pred, target, num_plots=5, is_eval=False, iter=None, use_tea
             pass
 
 
-def plot_weights(weights, iter):
+def plot_weights(weights, iter, epoch):
     fig, ax = plt.subplots(nrows=1, ncols=1, sharex='col', sharey='row', figsize=(16, 4), dpi=80)
     im = ax.imshow(weights.T, cmap='viridis', interpolation='nearest', norm=colors.LogNorm(vmin=0.001, vmax=1.0))
     fig.colorbar(im, ax=ax)
 
-    wandb.log({"Decoder weights after conductor": fig}, step=iter)
+    wandb.log({"Decoder weights after conductor": fig, "Epoch": epoch}, step=iter)
     plt.close('all')
 
 
