@@ -497,16 +497,20 @@ class BiGRU_fixed_sigma_Encoder(nn.Module):
                      input_size=61,
                      hidden_size=2048,
                      latent_size=512,
-                     num_layers=2):
+                     num_layers=2,
+                     dropout_p=0.5):
             super(BiGRU_fixed_sigma_Encoder, self).__init__()
             self.input_size = input_size
             self.hidden_size = hidden_size
             self.latent_size = latent_size
             self.num_layers = num_layers
+            self.dropout_p = dropout_p
 
             self.bigru = nn.GRU(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers,
                                 bidirectional=True)
             self.mu = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
+            # Add dropout
+            self.dropout = nn.Dropout(p=self.dropout_p, inplace=True)
             self.sigma = nn.Linear(in_features=2 * hidden_size, out_features=latent_size)
             self.softplus = nn.Softplus()
 
@@ -519,6 +523,8 @@ class BiGRU_fixed_sigma_Encoder(nn.Module):
             print(h_n)
             #wandb.log({"h_n Hidden layer weights": wandb.Histogram(h_n.cpu().detach().numpy())})
             mu = self.mu(h_n)
+            # Apply Dropout
+            self.dropout(mu)
             # sigma = self.softplus(self.sigma(h_n))
             sigma = torch.tensor([1], dtype=torch.float, device=device)
             # torch.set_printoptions(profile="full")

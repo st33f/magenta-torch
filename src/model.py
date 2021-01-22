@@ -597,7 +597,8 @@ class Fixed_sigma_MusicGRUVAE(nn.Module):
         self.encoder = BiGRU_fixed_sigma_Encoder(encoder_input_size,
                                     encoder_hidden_size,
                                     latent_dim,
-                                    encoder_num_layers)
+                                    encoder_num_layers,
+                                    dropout_p=dropout_p)
         self.z_embedding = nn.Sequential(
             nn.Linear(in_features=latent_dim, out_features=latent_dim),
             nn.Tanh()
