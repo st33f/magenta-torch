@@ -243,7 +243,7 @@ class Trainer:
         if mean_kl_div != 0:
             wandb.log({"train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.cpu(),
                         "training mean KL Div": mean_kl_div.cpu(),
-                        "LR": self.scheduler.get_last_lr(),
+                        "LR": self.scheduler.get_last_lr().cpu().numpy(),
                       "Teacher Forcing Probability": use_teacher_forcing},
                       step=iter) #, "Hamming Dist": ham_dist})
         else:
@@ -433,11 +433,11 @@ class Trainer:
                     # send batch loss data to wandb
                     # wandb.log({"Epoch": epoch, "Eval ELBO": val_elbo_avg, "Eval KL Div": div})
                     wandb.log({"Epoch": epoch, "Eval ELBO mean over val set": torch.mean(torch.tensor(batch_elbo)).cpu().detach().numpy(),
-                               "Eval KL Div": torch.mean(torch.tensor(batch_kl)),
-                               "Eval R_loss": torch.mean(torch.tensor(batch_r_loss)),
-                               "Eval ELBO with TF": torch.mean(torch.tensor(batch_elbo_tf)),
-                               "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)),
-                               "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf))
+                               "Eval KL Div": torch.mean(torch.tensor(batch_kl)).cpu().detach().numpy(),
+                               "Eval R_loss": torch.mean(torch.tensor(batch_r_loss)).cpu().detach().numpy(),
+                               "Eval ELBO with TF": torch.mean(torch.tensor(batch_elbo_tf)).cpu().detach().numpy(),
+                               "Eval KL Div with TF": torch.mean(torch.tensor(batch_kl_tf)).cpu().detach().numpy(),
+                               "Eval R_loss with TF": torch.mean(torch.tensor(batch_r_loss_tf)).cpu().detach().numpy()
                                })
                     # wandb.log({"Epoch": epoch, "Eval R_loss": eval_r_loss, "Eval Accuracy": eval_acc,"Eval Hamming Dist": eval_ham_dist})
                     #wandb.log({"Epoch": epoch, "Eval Accuracy": eval_acc, "Eval Hamming Dist": eval_ham_dist})
