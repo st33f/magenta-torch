@@ -167,9 +167,9 @@ class Trainer:
                    "kl cost": kl_cost.cpu(),
                   "Z w/o TF": wandb.Histogram(z_no_tf.cpu().detach().numpy()), "mu w/o TF": wandb.Histogram(mu_no_tf.cpu().detach().numpy()),
                    "sigma w/o TF": wandb.Histogram(sigma_no_tf.cpu().detach().numpy()),
-                   "kl cost w/o TF": kl_cost_no_tf.cpu(),
-                   "train ELBO w/o TF": no_tf_ELBO.item(), "training R_loss w/o TF": r_loss_no_tf.cpu(),
-                   "training KL Div w/o TF": kl_no_tf.cpu(),
+                   "kl cost w/o TF": kl_cost_no_tf.cpu().detach().numpy(),
+                   "train ELBO w/o TF": no_tf_ELBO.item(), "training R_loss w/o TF": r_loss_no_tf.item(),
+                   "training KL Div w/o TF": kl_no_tf.item(),
                    },
                    step=step)
         acc = 0.
