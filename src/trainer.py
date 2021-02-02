@@ -254,8 +254,6 @@ class Trainer:
                        "Teacher Forcing Probability": use_teacher_forcing},
                       step=iter)  # , "Hamming Dist": ham_dist})
 
-        # log additional metrics
-        wandb.log({})#, "Training Accuracy": acc})
 
         if mean_kl_div != 0:
             return elbo.item(), mean_kl_div
