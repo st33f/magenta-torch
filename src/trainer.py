@@ -241,9 +241,9 @@ class Trainer:
 
         # send batch loss data to wandb - regular loss functions
         if mean_kl_div != 0:
-            wandb.log({"train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.cpu(),
-                        "training mean KL Div": mean_kl_div.cpu(),
-                        "LR": self.scheduler.get_last_lr().cpu().numpy(),
+            wandb.log({"train ELBO (batch avg)": elbo.item(),  "training R_loss": r_loss.item(),
+                        "training mean KL Div": mean_kl_div.item(),
+                        "LR": self.scheduler.get_last_lr(),
                       "Teacher Forcing Probability": use_teacher_forcing},
                       step=iter) #, "Hamming Dist": ham_dist})
         else:
