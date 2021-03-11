@@ -23,7 +23,7 @@ preprocessor:
     include_held_note: False
     
 trainer:
-    learning_rate: 0.0005 #0.0005 #0.001
+    learning_rate: 0.0001 #0.0005 #0.001
     KL_rate: 0.9999
     KL_end: 0.2
     free_bits: 64 #256
@@ -37,7 +37,7 @@ trainer:
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
-    scale_tf: .9
+    scale_tf: .99
     use_regularizer: False
     regularizer_weight: 0.2
     use_target_smoothing: False
