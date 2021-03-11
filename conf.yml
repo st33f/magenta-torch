@@ -17,7 +17,7 @@ preprocessor:
     velocity_threshold: 0.5
     instrument_attach_method: '1hot-category'
     attach_instruments: False
-    input_length: &T 32 #256 # Number of beats. We want to split songs into 16 bars of 16th notes
+    input_length: &T 256 #256 # Number of beats. We want to split songs into 16 bars of 16th notes
     output_length: *T
     test_fraction: 0.1
     include_held_note: False
