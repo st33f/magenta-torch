@@ -169,7 +169,7 @@ class Trainer:
                    "sigma w/o TF": wandb.Histogram(sigma_no_tf.cpu().detach().numpy()),
                    "kl cost w/o TF": kl_cost_no_tf.cpu().detach().numpy(),
                    "train ELBO w/o TF": no_tf_ELBO.item(), "training R_loss w/o TF": r_loss_no_tf.item(),
-                   "training KL Div w/o TF": kl_no_tf.item(),
+                   "training KL Div w/o TF": kl_no_tf.cpu().detach().numpy(),
                    },
                    step=step)
         acc = 0.
