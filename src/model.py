@@ -632,16 +632,16 @@ class Fixed_sigma_MusicGRUVAE(nn.Module):
         out = self.decoder(x, z, h_dec, use_teacher_forcing)
 
         #### This is for printing Z
-        torch.set_printoptions(profile="full")
-        print("Print sigma ---------")
-        print(sigma)
+        # torch.set_printoptions(profile="full")
+        # print("Print sigma ---------")
+        # print(sigma)
         #print("Printing Z....")
         #print(z.size())
         #print(z)
         #print("Printing OUT.....")
         #print(out.size())
         #print(out)
-        torch.set_printoptions(profile="default")
+        # torch.set_printoptions(profile="default")
 
         return out, mu, sigma, z
 

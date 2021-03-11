@@ -2,7 +2,7 @@ preprocessor:
     classes:
         - Jazz
         - Pop
-    pickle_store_folder: 'clean/smallest'
+    pickle_store_folder: 'clean/2-bar/clean_midi_1'
     include_unknown: True
     only_unknown: True
     low_crop: 24 
@@ -17,23 +17,23 @@ preprocessor:
     velocity_threshold: 0.5
     instrument_attach_method: '1hot-category'
     attach_instruments: False
-    input_length: &T 256 # Number of beats. We want to split songs into 16 bars of 16th notes
+    input_length: &T 32 #256 # Number of beats. We want to split songs into 16 bars of 16th notes
     output_length: *T
     test_fraction: 0.1
     include_held_note: False
     
 trainer:
-    learning_rate: 0.005 #0.0005 #0.001
+    learning_rate: 0.0005 #0.0005 #0.001
     KL_rate: 0.9999
     KL_end: 0.2
-    free_bits: 256
-    sampling_rate: 1000 #2000
-    batch_size: &batchsize 8
-    print_every: 1
+    free_bits: 1024 #256
+    sampling_rate: 2000 #2000
+    batch_size: &batchsize 2
+    print_every: 100
     checkpoint_every: 5000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/baseline_tests'
+    output_dir: 'scratch/outputs/baseline_tests_march'
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
