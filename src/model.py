@@ -121,7 +121,8 @@ class DanceabilityGRUVAE(nn.Module):
                  latent_dim=512,
                  encoder_num_layers=2,
                  decoder_num_layers=2,
-                 use_danceability=True):
+                 use_danceability=True,
+                 dropout_p=0.1):
         super(DanceabilityGRUVAE, self).__init__()
         self.use_danceability = use_danceability
         self.input_size = decoder_input_size
@@ -141,7 +142,8 @@ class DanceabilityGRUVAE(nn.Module):
                                            latent_size=latent_dim,
                                            num_layers=decoder_num_layers,
                                            max_seq_length=max_sequence_length,
-                                           seq_length=sequence_length)
+                                           seq_length=sequence_length,
+                                           dropout_p=dropout_p)
 
     def forward(self, data, use_teacher_forcing, da=None):
         """
@@ -209,7 +211,8 @@ class MuDanceVAE(nn.Module):
                  latent_dim=512,
                  encoder_num_layers=2,
                  decoder_num_layers=2,
-                 use_danceability=True):
+                 use_danceability=True,
+                 dropout_p=0.1):
         super(MuDanceVAE, self).__init__()
         self.use_danceability = use_danceability
         self.input_size = decoder_input_size
@@ -229,7 +232,8 @@ class MuDanceVAE(nn.Module):
                                            latent_size=latent_dim,
                                            num_layers=decoder_num_layers,
                                            max_seq_length=max_sequence_length,
-                                           seq_length=sequence_length)
+                                           seq_length=sequence_length,
+                                              dropout_p=dropout_p)
 
     def forward(self, data, use_teacher_forcing, da=None):
         """
@@ -286,7 +290,8 @@ class MuDanceVAE(nn.Module):
                  latent_dim=512,
                  encoder_num_layers=2,
                  decoder_num_layers=2,
-                 use_danceability=True):
+                 use_danceability=True,
+                 dropout_p=0.1):
         super(MuDanceVAE, self).__init__()
         self.use_danceability = use_danceability
         self.input_size = decoder_input_size
@@ -306,7 +311,8 @@ class MuDanceVAE(nn.Module):
                                            latent_size=latent_dim,
                                            num_layers=decoder_num_layers,
                                            max_seq_length=max_sequence_length,
-                                           seq_length=sequence_length)
+                                           seq_length=sequence_length,
+                                              dropout_p=dropout_p)
 
     def forward(self, data, use_teacher_forcing, da=None):
         """

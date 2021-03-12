@@ -370,8 +370,8 @@ class Trainer:
                             pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=False, da=da)
                             pred_for_viz_tf = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
 
-                            plot_spectogram(pred_for_viz, data, iter=iter, is_eval=True, use_teacher_forcing=False, num_plots=32)
-                            plot_spectogram(pred_for_viz_tf, data, iter=iter, is_eval=True, use_teacher_forcing=True, num_plots=32)
+                            plot_spectogram(pred_for_viz, data, iter=iter, is_eval=True, use_teacher_forcing=False, num_plots=data.size(1))
+                            plot_spectogram(pred_for_viz_tf, data, iter=iter, is_eval=True, use_teacher_forcing=True, num_plots=data.size(1))
 
 
 
