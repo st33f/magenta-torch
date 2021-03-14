@@ -23,21 +23,21 @@ preprocessor:
     include_held_note: False
     
 trainer:
-    learning_rate: 0.00001 #0.0005 #0.001
+    learning_rate: 0.0001 #0.0005 #0.001
     KL_rate: 0.9999
     KL_end: 0.2
     free_bits: 64
     sampling_rate: 2000 #2000
-    batch_size: &batchsize 4
+    batch_size: &batchsize 2
     print_every: 1
     checkpoint_every: 5000
     plot_every: 1
     checkpoint_dir: 'checkpoint'
-    output_dir: 'scratch/outputs/baseline_tests_march'
+    output_dir: 'scratch/outputs/tf_tests_march'
     use_danceability: &DA False
     use_fake_data: False
     use_grad_clip: True
-    scale_tf: .99
+    scale_tf: .55
     use_regularizer: False
     regularizer_weight: 0.2
     use_target_smoothing: False
