@@ -257,7 +257,7 @@ class Trainer:
                        "Teacher Forcing Probability": use_teacher_forcing},
                       step=iter)  # , "Hamming Dist": ham_dist})
 
-
+        del r_loss
         if mean_kl_div != 0:
             return elbo.item(), mean_kl_div
         else:
@@ -332,6 +332,7 @@ class Trainer:
                     # delete tensors from memory
                     del elbo
                     del kl
+                    del data
                     torch.cuda.empty_cache()
                     print("Memory After Cleraning \n", torch.cuda.memory_allocated() / 1024 ** 2)
                     print(torch.cuda.memory_cached() / 1024 ** 2)
