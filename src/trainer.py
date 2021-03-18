@@ -371,6 +371,9 @@ class Trainer:
                     #     else:
                     #         self.plot_last_batch(model, data, use_teacher_forcing=False, da=None, num_plots=1, is_eval=False, iter=iter)
 
+                    # tqdm
+                    t.set_postfix(loss=f"{loss_avg}")
+                    t.update()
                     # delete tensors from memory
                     del elbo
                     del batch
@@ -384,10 +387,6 @@ class Trainer:
                     torch.cuda.empty_cache()
                     print("Memory After Cleraning \n", torch.cuda.memory_allocated() / 1024 ** 2)
                     print(torch.cuda.memory_cached() / 1024 ** 2)
-
-                    # tqdm
-                    t.set_postfix(loss=f"{loss_avg}")
-                    t.update()
 
 
             # train_loss.append(torch.mean(torch.tensor(batch_loss)))
