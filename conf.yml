@@ -53,7 +53,7 @@ model:
     sequence_length: 16
     encoder_input_size: 61
     decoder_input_size: 61
-    encoder_hidden_size: 2048
+    encoder_hidden_size: 1024 #2048
     decoder_hidden_size: 1024
     latent_dim: 512
     encoder_num_layers: 2

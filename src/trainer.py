@@ -310,13 +310,13 @@ class Trainer:
         results['n_evaluation_batches'] = len(val_data)
 
         for epoch in range(start_epoch, end_epoch):
-            try:
-                plot_weights(model.decoder.gru.weight_ih_l0.abs().cpu().detach().numpy(), iter, epoch)
-            except:
-                plot_weights(model.decoder.lstm.weight_ih_l0.abs().cpu().detach().numpy(), iter, epoch)
             batch_loss, batch_kl = [], []
             with tqdm(total=len(train_data)) as t:
                 for idx, batch in enumerate(train_data):
+                    try:
+                        plot_weights(model.decoder.gru.weight_ih_l0.abs().cpu().detach().numpy(), iter, epoch)
+                    except:
+                        plot_weights(model.decoder.lstm.weight_ih_l0.abs().cpu().detach().numpy(), iter, epoch)
                     model.train()
                     # save the randomly initialized model right away
                     #self.save_checkpoint(model, epoch, iter)
