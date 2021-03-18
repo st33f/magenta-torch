@@ -175,6 +175,17 @@ class Trainer:
         acc = 0.
         ham_dist = 0.
         # r_loss = 0.
+
+        del pred
+        del pred_no_tf
+        del mu
+        del mu_no_tf
+        del sigma
+        del sigma_no_tf
+        del z
+        del z_no_tf
+        torch.cuda.empty_cache()
+
         # return teh mean KL
         return elbo, torch.mean(kl), r_loss, acc, ham_dist
 
