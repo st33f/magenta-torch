@@ -31,7 +31,7 @@ trainer:
     batch_size: &batchsize 64
     print_every: 1
     checkpoint_every: 5000
-    plot_every: 1
+    plot_every: 10
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/big_bs_tests_march'
     use_danceability: &DA False

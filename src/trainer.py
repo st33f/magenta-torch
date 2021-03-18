@@ -96,6 +96,10 @@ class Trainer:
         model.eval()
         with torch.no_grad():
             pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+        del mu
+        del sigma
+        del z
+        torch.cuda.empty_cache()
         model.train()
         return pred
 
@@ -107,6 +111,11 @@ class Trainer:
         with torch.no_grad():
             #pred = model.reconstruct(batch, 1)
             pred, mu, sigma, z = model(batch, use_teacher_forcing, da)
+            del mu
+            del sigma
+            del z
+            torch.cuda.empty_cache()
+
             batch = batch.detach().cpu()
             print("PLOTTING ------")
             # print(f"pred: {pred.size()}")
@@ -153,7 +162,7 @@ class Trainer:
 
         # print(f"Scores for batch: {step}")
         # print(f"R_loss: {r_loss}")
-        print(f"Elbo in training script: {elbo}")
+        print(f"Elbo in training script: {elbo.item()}")
         # print(f"KL weight: {kl_weight}")
         # print(f"Hamming distance: {ham_dist}")
         # print(f"Batch mean KL Div: {kl_div.mean()}")
@@ -165,17 +174,18 @@ class Trainer:
                    "sigma": wandb.Histogram(sigma.cpu().detach().numpy()),
                    "KL Weight": kl_weight, #"Pred": wandb.Histogram(pred.cpu().detach().numpy()),
                    "kl cost": kl_cost.cpu(),
-                  "Z w/o TF": wandb.Histogram(z_no_tf.cpu().detach().numpy()), "mu w/o TF": wandb.Histogram(mu_no_tf.cpu().detach().numpy()),
-                   "sigma w/o TF": wandb.Histogram(sigma_no_tf.cpu().detach().numpy()),
-                   "kl cost w/o TF": kl_cost_no_tf.cpu().detach().numpy(),
-                   "train ELBO w/o TF": no_tf_ELBO.item(), "training R_loss w/o TF": r_loss_no_tf.item(),
-                   "training KL Div w/o TF": kl_no_tf.cpu().detach().numpy(),
+                  "Z no TF": wandb.Histogram(z_no_tf.cpu().detach().numpy()), "mu no TF": wandb.Histogram(mu_no_tf.cpu().detach().numpy()),
+                   "sigma no TF": wandb.Histogram(sigma_no_tf.cpu().detach().numpy()),
+                   "kl cost no TF": kl_cost_no_tf.cpu().detach().numpy(),
+                   "train ELBO no TF": no_tf_ELBO.item(), "training R_loss no TF": r_loss_no_tf.item(),
+                   "training KL Div no TF": kl_no_tf.cpu().detach().numpy(),
                    },
                    step=step)
         acc = 0.
         ham_dist = 0.
         # r_loss = 0.
 
+        del batch
         del pred
         del pred_no_tf
         del mu
@@ -184,6 +194,11 @@ class Trainer:
         del sigma_no_tf
         del z
         del z_no_tf
+        del kl_cost_no_tf
+        del kl_cost
+        del no_tf_ELBO
+        del kl_no_tf
+        del r_loss_no_tf
         torch.cuda.empty_cache()
 
         # return teh mean KL
