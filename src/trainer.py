@@ -329,6 +329,12 @@ class Trainer:
                     batch_kl.append(kl)
                     iter += 1
 
+                    # delete tensors from memory
+                    del elbo
+                    del kl
+                    torch.cuda.empty_cache()
+                    print("Memory After Cleraning \n", torch.cuda.memory_allocated() / 1024 ** 2)
+                    print(torch.cuda.memory_cached() / 1024 ** 2)
 
                     if iter%self.print_every == 0:
                         loss_avg = torch.mean(torch.tensor(batch_loss))
