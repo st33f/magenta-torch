@@ -186,6 +186,10 @@ def main(args):
     # print(f"len Val data: {len(val_data)}")
     # print(f"len filepaths: {len(filepaths)}")
     model = load_model(args.model_type, model_params)
+    print("Memory after model load \n", torch.cuda.memory_allocated())
+    print(torch.cuda.memory_cached())
+
+
     #model = model.to(device)
     #model = torch.nn.DataParallel(model, device_ids=[0,1])
     #print(f"device count: {torch.cuda.device_count()}")
