@@ -229,7 +229,10 @@ class Danceability_BiGRUEncoder(nn.Module):
         else:
             mu = self.mu(h_n)
             sigma = self.softplus(self.sigma(h_n))
-
+        del _
+        del h_n
+        del new_h_n
+        torch.cuda.empty_cache()
         return mu, sigma
 
     def init_hidden(self, batch_size=1):
