@@ -239,8 +239,8 @@ class Trainer:
         self.scheduler.step()
         #print(f"elbo train batch: {elbo}")
 
-        print("Memory after optimizer.step()\n", torch.cuda.memory_allocated())
-        print(torch.cuda.memory_cached())
+        print("Memory after optimizer.step()\n", torch.cuda.memory_allocated()/1024**2)
+        print(torch.cuda.memory_cached()/1024**2)
 
         # send batch loss data to wandb - regular loss functions
         if mean_kl_div != 0:
@@ -295,8 +295,8 @@ class Trainer:
                     # save the randomly initialized model right away
                     #self.save_checkpoint(model, epoch, iter)
 
-                    print("Memory in Training after model.train() \n", torch.cuda.memory_allocated())
-                    print(torch.cuda.memory_cached())
+                    print("Memory in Training after model.train() \n", torch.cuda.memory_allocated()/1024**2)
+                    print(torch.cuda.memory_cached()/1024**2)
 
                     # first, get data AND danceability from the dataset
                     data, da = batch
@@ -308,8 +308,8 @@ class Trainer:
                         data = torch.unsqueeze(data, dim=1)
                     data = data.to(device)
 
-                    print("Memory in Training after data.to(device) \n", torch.cuda.memory_allocated())
-                    print(torch.cuda.memory_cached())
+                    print("Memory in Training after data.to(device) \n", torch.cuda.memory_allocated()/1024**2)
+                    print(torch.cuda.memory_cached()/1024**2)
 
                     pred_for_viz_tf = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
                     pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=False, da=da)
