@@ -32,10 +32,11 @@ def ELBO(pred, target, mu, log_var, free_bits, use_target_smoothing=True, alpha=
 
 
     # Pytorch cross_entropy combines LogSoftmax and NLLLoss
-    likelihood = -binary_cross_entropy(pred, target, reduction='sum')
+    #likelihood = -binary_cross_entropy(pred, target, reduction='sum')
+    likelihood = -binary_cross_entropy_with_logits(pred, target, reduction='sum')
     print()
-    print(f"likelihood: {likelihood}")
-    print(f"bce: {binary_cross_entropy(pred, target, reduction='sum')}")
+    # print(f"likelihood: {likelihood}")
+    # print(f"bce: {binary_cross_entropy(pred, target, reduction='sum')}")
     # Regularization error
     sigma_prior = torch.tensor([1], dtype=torch.float, device=device)
     mu_prior = torch.tensor([0], dtype=torch.float, device=device)
@@ -46,9 +47,9 @@ def ELBO(pred, target, mu, log_var, free_bits, use_target_smoothing=True, alpha=
     p = Normal(mu_prior, sigma_prior)
     q = Normal(mu, sigma)
     kl_div = kl_divergence(q, p)
-    print(kl_div)
+    #print(kl_div)
     #print(f"kl div: {kl_div}")
-    print(f"mean KL div: {torch.mean(kl_div)}")
+    #print(f"mean KL div: {torch.mean(kl_div)}")
     r_loss = -likelihood
     #elbo = -likelihood
     #elbo = torch.mean(likelihood) - torch.max(torch.mean(kl_div)-free_bits, torch.tensor([0], dtype=torch.float, device=device))
