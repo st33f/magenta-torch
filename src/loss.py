@@ -32,8 +32,8 @@ def ELBO(pred, target, mu, log_var, free_bits, use_target_smoothing=True, alpha=
 
 
     # Pytorch cross_entropy combines LogSoftmax and NLLLoss
-    #likelihood = -binary_cross_entropy(pred, target, reduction='sum')
-    likelihood = -binary_cross_entropy_with_logits(pred, target, reduction='sum')
+    likelihood = -binary_cross_entropy(pred, target, reduction='sum')
+    #likelihood = -binary_cross_entropy_with_logits(pred, target, reduction='sum')
     print()
     # print(f"likelihood: {likelihood}")
     # print(f"bce: {binary_cross_entropy(pred, target, reduction='sum')}")
