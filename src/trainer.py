@@ -246,24 +246,34 @@ class Trainer:
                    "sigma": wandb.Histogram(sigma.cpu().detach().numpy())})
         return loss, ELBO, kl_div, acc, ham_dist
 
-    def train_batch(self, iter, model, batch, da=None):
+    def train_batch(self, iter, model, batch, da=None, scaler=None):
         self.optimizer.zero_grad()
         use_teacher_forcing = self.inverse_sigmoid(iter)
-        elbo, mean_kl_div, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
+        with torch.cuda.amp.autocast():
+            elbo, mean_kl_div, r_loss, acc, ham_dist = self.compute_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.compute_flat_loss(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.r_loss_only(iter, model, batch, use_teacher_forcing, da)
         #elbo, r_loss, kl_div, acc, ham_dist = self.new_ELBO_loss(iter, model, batch, use_teacher_forcing, da)
 
 
         #print(f"elbo train batch: {elbo}")
-        elbo.backward()
+        # Scales the loss, and calls backward()
+        # to create scaled gradients
+        scaler.scale(elbo).backward()
+
+        #elbo.backward()
 
         if self.use_grad_clip:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 10000)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 100)
 
-        self.optimizer.step()
+        #self.optimizer.step()
+        # Unscales
+        # gradients and calls
+        # or skips optimizer.step()
+        scaler.step(self.optimizer)
         self.scheduler.step()
         #print(f"elbo train batch: {elbo}")
+        scaler.update()
 
         print("Memory after optimizer.step()\n", torch.cuda.memory_allocated()/1024**2)
         print(torch.cuda.memory_cached()/1024**2)
@@ -309,6 +319,8 @@ class Trainer:
         results['n_training_batches'] = len(train_data)
         results['n_evaluation_batches'] = len(val_data)
 
+        scaler = torch.cuda.amp.GradScaler()
+
         for epoch in range(start_epoch, end_epoch):
             batch_loss, batch_kl = [], []
             with tqdm(total=len(train_data)) as t:
@@ -346,9 +358,9 @@ class Trainer:
                         da = da.to(device)
                         print(f"da trainer.py; {da}")
                         # pass it both to the trainer
-                        elbo, kl = self.train_batch(iter, model, data, da)
+                        elbo, kl = self.train_batch(iter, model, data, da, scaler=scaler)
                     else:
-                        elbo, kl = self.train_batch(iter, model, data, da=None)
+                        elbo, kl = self.train_batch(iter, model, data, da=None, scaler=scaler)
                     #print(f"trainer elbo: {elbo}")
                     #print(f"batch_loss: {batch_loss}")
                     batch_loss.append(elbo)
