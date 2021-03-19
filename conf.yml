@@ -23,7 +23,7 @@ preprocessor:
     include_held_note: False
     
 trainer:
-    learning_rate: 0.0005 #0.0005 #0.001
+    learning_rate: 0.001 #0.0005 #0.001
     KL_rate: 0.9999
     KL_end: 0.2
     free_bits: 256
