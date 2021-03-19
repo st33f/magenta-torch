@@ -259,21 +259,21 @@ class Trainer:
         #print(f"elbo train batch: {elbo}")
         # Scales the loss, and calls backward()
         # to create scaled gradients
-        scaler.scale(elbo).backward()
+        #scaler.scale(elbo).backward()
 
-        #elbo.backward()
-        scaler.unscale_(self.optimizer)
+        elbo.backward()
+        #scaler.unscale_(self.optimizer)
         if self.use_grad_clip:
             torch.nn.utils.clip_grad_norm_(model.parameters(), 100)
 
-        #self.optimizer.step()
+        self.optimizer.step()
         # Unscales
         # gradients and calls
         # or skips optimizer.step()
-        scaler.step(self.optimizer)
+        #scaler.step(self.optimizer)
         self.scheduler.step()
         #print(f"elbo train batch: {elbo}")
-        scaler.update()
+        #scaler.update()
 
         print("Memory after optimizer.step()\n", torch.cuda.memory_allocated()/1024**2)
         print(torch.cuda.memory_cached()/1024**2)
@@ -319,7 +319,7 @@ class Trainer:
         results['n_training_batches'] = len(train_data)
         results['n_evaluation_batches'] = len(val_data)
 
-        scaler = torch.cuda.amp.GradScaler()
+        #scaler = torch.cuda.amp.GradScaler()
 
         for epoch in range(start_epoch, end_epoch):
             batch_loss, batch_kl = [], []
@@ -358,9 +358,9 @@ class Trainer:
                         da = da.to(device)
                         print(f"da trainer.py; {da}")
                         # pass it both to the trainer
-                        elbo, kl = self.train_batch(iter, model, data, da, scaler=scaler)
+                        elbo, kl = self.train_batch(iter, model, data, da)#, scaler=scaler)
                     else:
-                        elbo, kl = self.train_batch(iter, model, data, da=None, scaler=scaler)
+                        elbo, kl = self.train_batch(iter, model, data, da=None)#, scaler=scaler)
                     #print(f"trainer elbo: {elbo}")
                     #print(f"batch_loss: {batch_loss}")
                     batch_loss.append(elbo)
