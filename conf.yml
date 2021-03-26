@@ -34,7 +34,7 @@ trainer:
     plot_every: 10
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/final_experiments'
-    use_danceability: &DA False
+    use_danceability: &DA True
     use_fake_data: False
     use_grad_clip: True
     scale_tf: .99
