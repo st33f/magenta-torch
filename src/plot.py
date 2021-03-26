@@ -613,7 +613,7 @@ def plot_weights(weights, iter, epoch):
     im = ax.imshow(weights.T, cmap='viridis', interpolation='nearest', norm=colors.LogNorm(vmin=0.001, vmax=1.0))
     fig.colorbar(im, ax=ax)
 
-    wandb.log({f"Decoder weights after conductor Epoch {epoch}": fig, "Epoch": epoch}, step=iter)
+    wandb.log({f"Decoder weights": fig}, step=iter)
     plt.close('all')
 
 

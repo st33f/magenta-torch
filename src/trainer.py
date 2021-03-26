@@ -265,7 +265,7 @@ class Trainer:
         elbo.backward()
         #scaler.unscale_(self.optimizer)
         if self.use_grad_clip:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 100)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 50)
 
         self.optimizer.step()
         # Unscales
