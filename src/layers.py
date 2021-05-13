@@ -339,7 +339,7 @@ class HierarchicalGRUDecoder(nn.Module):
             nn.Linear(in_features=hidden_size, out_features=latent_size),
             nn.Tanh())
         # Add dropout
-        self.dropout = nn.Dropout(p=self.dropout_p, inplace=True)
+        #self.dropout = nn.Dropout(p=self.dropout_p, inplace=True)
         self.gru = nn.GRU(input_size=input_size + latent_size, hidden_size=hidden_size, num_layers=num_layers)
         self.out = nn.Sequential(
             nn.Linear(in_features=hidden_size, out_features=input_size),
@@ -397,7 +397,7 @@ class HierarchicalGRUDecoder(nn.Module):
                 e = torch.cat((prev_note, embedding), -1)
                 # print(f"E size: {e.size()}")
                 # Apply Dropout
-                self.dropout(e)
+                #self.dropout(e)
 
 
                 prev_note, h0_dec = self.gru(e, h0_dec)

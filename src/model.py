@@ -345,6 +345,20 @@ class MuDanceVAE(nn.Module):
         out = self.decoder.reconstruct(z, h_dec, temperature)
         return out
 
+    def decode_with_diff_z(self, x, new_z, temperature, da=None, use_teacher_forcing=True):
+        x = x.to(device)
+        batch_size = x.size(1)
+        h_enc = self.encoder.init_hidden(batch_size)
+        # mu, sigma = self.encoder(x, h_enc)
+        # with torch.no_grad():
+        #     epsilon = torch.randn_like(mu, device=device)
+        # z = self.z_embedding(mu + sigma * epsilon)
+
+        h_dec = self.decoder.init_hidden(batch_size)
+        #out = self.decoder.reconstruct(new_z, h_dec, temperature)
+        out = self.decoder(x, new_z, h_dec, use_teacher_forcing)
+        return out
+
 class ZDanceVAE(nn.Module):
     """
     Inputs

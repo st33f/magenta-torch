@@ -25,6 +25,10 @@ class MidiBuilder():
         """
         piano_roll = pd.DataFrame(sample, columns=self.column_names, dtype='uint8')
 
+        print("Sample")
+        print(sample)
+        print("PIAno Roll reconstruction DF")
+        print(piano_roll.head(100))
         program = 0
         velocity = int(100)
         bps = tempo / 60
@@ -47,6 +51,8 @@ class MidiBuilder():
                     note_start = idx/sps # 0 if tempo = 60
                     note_end = (idx+1)/sps # 0.25
 
+                    print("Note start", note_start)
+                    print("Note end", note_end)
                     # Create a Note instance, starting according to the timestep * 16ths, ending one sixteenth later
                     # TODO: Smooth this a bit by using lookahead
                     note = pretty_midi.Note(
