@@ -35,7 +35,7 @@ trainer:
     checkpoint_dir: 'checkpoint'
     output_dir: 'scratch/outputs/final_experiments_no_regularizers'
     use_danceability: &DA False
-    use_fake_data: False
+    use_fake_data: True
     use_grad_clip: False
     scale_tf: 1
     use_regularizer: False
