@@ -277,7 +277,7 @@ class Trainer:
         #scaler.update()
 
         print("Memory after optimizer.step()\n", torch.cuda.memory_allocated()/1024**2)
-        print(torch.cuda.memory_cached()/1024**2)
+        print(torch.cuda.memory_reserved()/1024**2)
 
         # send batch loss data to wandb - regular loss functions
         if mean_kl_div != 0:
@@ -335,7 +335,7 @@ class Trainer:
                     #self.save_checkpoint(model, epoch, iter)
 
                     print("Memory in Training after model.train() \n", torch.cuda.memory_allocated()/1024**2)
-                    print(torch.cuda.memory_cached()/1024**2)
+                    print(torch.cuda.memory_reserved()/1024**2)
 
                     # first, get data AND danceability from the dataset
                     data, da = batch
@@ -348,7 +348,7 @@ class Trainer:
                     data = data.to(device)
 
                     print("Memory in Training after data.to(device) \n", torch.cuda.memory_allocated()/1024**2)
-                    print(torch.cuda.memory_cached()/1024**2)
+                    print(torch.cuda.memory_reserved()/1024**2)
 
                     pred_for_viz_tf = self.get_pred_from_data(model, data, use_teacher_forcing=True, da=da)
                     pred_for_viz = self.get_pred_from_data(model, data, use_teacher_forcing=False, da=da)
@@ -399,7 +399,7 @@ class Trainer:
                     del pred_for_viz_tf
                     torch.cuda.empty_cache()
                     print("Memory After Cleraning \n", torch.cuda.memory_allocated() / 1024 ** 2)
-                    print(torch.cuda.memory_cached() / 1024 ** 2)
+                    print(torch.cuda.memory_reserved() / 1024 ** 2)
 
 
             # train_loss.append(torch.mean(torch.tensor(batch_loss)))

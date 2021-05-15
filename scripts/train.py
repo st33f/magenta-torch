@@ -187,7 +187,7 @@ def main(args):
     # print(f"len filepaths: {len(filepaths)}")
     model = load_model(args.model_type, model_params)
     print("Memory after model load \n", torch.cuda.memory_allocated()/1024**2)
-    print(torch.cuda.memory_cached()/1024**2)
+    print(torch.cuda.memory_reserved()/1024**2)
 
 
     #model = model.to(device)
