@@ -3,7 +3,7 @@ Code belonging to the MSc. Thesis "Creating meaningful and controllable latent r
 S.A.J. Wijtsma
 
 Pytorch Implementation of MusicVAE with LSTM and GRU architectures, allowing for integrating danceability as an additional feature to condition upon. 
-Code includes a script to retrieve the danceability feature from the SPotify API. 
+Code includes a script to retrieve the danceability feature from the Spotify API. 
 
 Abstract;
 Deep generative models are increasingly being used to exploit 'machine intelligence' for creative purposes. The Variational autoencoder (VAE) has proven to be an effective model for capturing (and generating) the dynamics of musical compositions. The VAEs latent representation can be used in all kinds of creative applications such as controlled music generation or interpolation between two musical sequences.
