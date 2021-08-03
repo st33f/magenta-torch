@@ -16,7 +16,7 @@ This project makes use of Weights & Biases for online logging and experiment tra
     wandb login
 
 ### Dataset
-To train a model on you own dataset, you must first use the preprocessing script on your MIDI files. Make sure to use the format of the Lakh dataset (https://colinraffel.com/projects/lmd/), which has subfolders per artist with the MIDI filenames containing hte trackname. The script will preprocess all MIDI files, collect additional musical features on the track from the Spotify API and create a dataset in the desired format:
+To train a model on you own dataset, you must first use the preprocessing script on your MIDI files. Make sure to use the format of the Lakh dataset (https://colinraffel.com/projects/lmd/), which has subfolders per artist with the MIDI filenames containing the trackname. The script will preprocess all MIDI files, collect additional musical features on the track from the Spotify API and create a dataset in the desired format:
 
     python /scripts/preprocess.py --import_dir=<YOUR_MIDI_DIRECTORY> 
 
