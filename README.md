@@ -23,9 +23,9 @@ To train a model on you own dataset, you must first use the preprocessing script
 __Note that to retrieve the features from the Spotify API, your own valid credentials for the Spotify API are assumed to be available as environment variables. See `src/spotify.py`__
 
 ### Training a model
-To train a model, first define the deired hyperparameters in the configuration file `conf.yaml`, then run:
+To train a model, first define the desired hyperparameters in the configuration file `conf.yml`, then run:
 
-     python /scripts/train.py --model_type=gru --epochs=10 
+     python /scripts/train.py --conf=conf.yml --model_type=gru --epochs=10 
      
 Results will be logged to Weights and Biases. 
 
